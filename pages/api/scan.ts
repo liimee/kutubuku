@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import scan from '../../scan';
+import scan from '@/scan';
 import { authOptions } from "./auth/[...nextauth]"
 import { unstable_getServerSession } from "next-auth/next"
 

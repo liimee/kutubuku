@@ -11,7 +11,15 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(uuid())
+  id       String @id @default(uuid())
   username String
   password String
+}
+
+model Book {
+  path   String @unique
+  title  String
+  author String
+  desc   String?
+  id     String @default(cuid()) @id
 }

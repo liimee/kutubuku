@@ -24,7 +24,7 @@ export default function Index({ csrfToken }: { csrfToken: string }) {
         </Typography>
 
         <form method="post" action="/api/auth/callback/credentials">
-          {router.query.error && <Alert severity="error">
+          {router.query.error && router.query.error != 'SessionRequired' && <Alert severity="error">
             {router.query.error == 'CredentialsSignin' ?
               "Consider checking your credentials?" : "It looks like the server is having an error. Sorry!"
             }

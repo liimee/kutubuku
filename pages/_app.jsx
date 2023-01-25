@@ -15,7 +15,8 @@ export default function App({ Component, pageProps }) {
     }
   })}>
     <CssBaseline />
-    <SessionProvider></SessionProvider>
-    <Component {...pageProps} />
+    <SessionProvider>
+      <Component {...pageProps} />
+    </SessionProvider>
   </ThemeProvider>
 }

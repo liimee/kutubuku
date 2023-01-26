@@ -1,3 +1,4 @@
+import BookThumb from "@/utils/bookthumb";
 import { Container, Grid, CircularProgress, Box, Button } from "@mui/material";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ export default function Index() {
             {
               list ? list.map((v: { id: string }) =>
                 <Button color='secondary' sx={{ p: 0 }} LinkComponent={Link} href={"/books/"+v.id} variant="text" key={v.id}>
-                  <img style={{ borderRadius: '4px', height: '14rem' }} src={'/api/thumb?id=' + encodeURIComponent(v.id)} alt="" />
+                  <BookThumb style={{ borderRadius: '4px', height: '14rem' }} id={v.id} alt="" />
                 </Button>
               ) : <CircularProgress />
             }

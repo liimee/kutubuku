@@ -13,11 +13,13 @@ export default function scan() {
 
   const gBookApi = new GoogleBooksAPI();
 
-  if (!existsSync(path.join('./', 'thumbnails'))) {
-    mkdirSync(path.join('./', 'thumbnails'));
+  const thumbnailPath = path.join('./', 'public', 'thumbnails')
+
+  if (!existsSync(thumbnailPath)) {
+    mkdirSync(thumbnailPath);
   } else {
-    if (!lstatSync(path.join('./', 'thumbnails')).isDirectory()) {
-      throw new Error(`Make sure ${path.resolve(path.join('./', 'thumbnails'))} is a directory`)
+    if (!lstatSync(thumbnailPath).isDirectory()) {
+      throw new Error(`Make sure ${path.resolve(thumbnailPath)} is a directory`)
     }
   }
 
@@ -53,7 +55,7 @@ export default function scan() {
                     }).then((dbres) => {
                       console.log(dbres);
 
-                      fetch(item.imageLinks.thumbnail).then(v => v.arrayBuffer()).then(v => writeFileSync(path.join('./', 'thumbnails', res.items[0].id + '.jpg'), Buffer.from(v)))
+                      fetch(item.imageLinks.thumbnail).then(v => v.arrayBuffer()).then(v => writeFileSync(path.join(thumbnailPath, res.items[0].id + '.jpg'), Buffer.from(v)))
                     })
                   }
                 })

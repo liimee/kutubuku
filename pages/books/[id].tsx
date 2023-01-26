@@ -1,3 +1,4 @@
+import BookThumb from "@/utils/bookthumb";
 import PlayArrow from "@mui/icons-material/PlayArrow";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { Container } from "@mui/system";
@@ -22,7 +23,7 @@ export default function Book() {
           sm: 'row'
         }} spacing={2}>
           <div style={{ width: '11rem' }}>
-            <img style={{ borderRadius: '4px', width: '11rem' }} src={'/api/thumb?id=' + encodeURIComponent(book.id)} alt="Book cover" />
+            <BookThumb style={{ borderRadius: '4px', width: '11rem' }} id={book.id} alt="Book cover" />
             <Button variant="text" startIcon={<PlayArrow />} sx={{ width: '100%' }}>Read</Button>
           </div>
           <div>

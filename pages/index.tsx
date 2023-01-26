@@ -1,12 +1,8 @@
-import { AppBar, Typography, Toolbar, Container, Grid, CircularProgress, Box, Button } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { Container, Grid, CircularProgress, Box, Button } from "@mui/material";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Index() {
-  useSession({
-    required: true
-  })
-
   const [list, setList] = useState<any>(null);
 
   useEffect(() => {
@@ -15,19 +11,12 @@ export default function Index() {
 
   return (
     <>
-      <AppBar position="fixed">
-        <Toolbar>
-          <Typography variant="h6">kutubuku</Typography>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="sm">
-        <Toolbar />
         <Box sx={{ p: 3 }} component="main">
           <Grid container spacing={2}>
             {
               list ? list.map((v: { id: string }) =>
-                <Button color='secondary' sx={{ p: 0 }} variant="text" key={v.id}>
+                <Button color='secondary' sx={{ p: 0 }} LinkComponent={Link} href={"/books/"+v.id} variant="text" key={v.id}>
                   <img style={{ borderRadius: '4px', height: '14rem' }} src={'/api/thumb?id=' + encodeURIComponent(v.id)} alt="" />
                 </Button>
               ) : <CircularProgress />

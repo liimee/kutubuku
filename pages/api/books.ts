@@ -1,4 +1,4 @@
-import client from "@/prisma";
+import client from "@/utils/prisma";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";

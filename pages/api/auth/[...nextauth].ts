@@ -1,7 +1,7 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials";
 import crypto from 'crypto';
-import client from '../../../prisma';
+import client from '../../../utils/prisma';
 
 function hash(str: string) {
   return crypto.createHash('sha256').update(str).digest('hex');

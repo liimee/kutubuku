@@ -1,6 +1,6 @@
 import BookThumb from "@/utils/bookthumb";
 import PlayArrow from "@mui/icons-material/PlayArrow";
-import { Button, CircularProgress, Stack, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { Container } from "@mui/system";
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react";
@@ -18,12 +18,17 @@ export default function Book() {
   return (
     <Container maxWidth='sm' sx={{ p: 3 }}>
       {book === 0 ? <CircularProgress /> :
-        <Stack direction={{
-          xs: 'column',
-          sm: 'row'
-        }} spacing={2}>
-          <div style={{ width: '11rem' }}>
-            <BookThumb style={{ borderRadius: '4px', width: '11rem' }} id={book.id} alt="Book cover" />
+        <Stack direction='row' spacing={2}>
+          <div>
+            <Box sx={{
+              width: {
+                xs: '30vw',
+                sm: '11rem'
+              },
+              minWidth: '100px'
+            }}>
+              <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} alt="Book cover" />
+            </Box>
             <Button variant="text" startIcon={<PlayArrow />} sx={{ width: '100%' }}>Read</Button>
           </div>
           <div>

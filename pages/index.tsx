@@ -17,9 +17,11 @@ export default function Index() {
           <Grid container spacing={2}>
             {
               list ? list.map((v: { id: string }) =>
-                <Button color='secondary' sx={{ p: 0 }} LinkComponent={Link} href={"/books/"+v.id} variant="text" key={v.id}>
-                  <BookThumb style={{ borderRadius: '4px', height: '14rem' }} id={v.id} alt="" />
-                </Button>
+                <Grid item key={v.id}>
+                  <Button color='secondary' sx={{ p: 0 }} LinkComponent={Link} href={"/books/" + v.id} variant="text">
+                    <BookThumb style={{ borderRadius: '4px', height: '14rem' }} id={v.id} alt="" />
+                  </Button>
+                </Grid>
               ) : <CircularProgress />
             }
           </Grid>

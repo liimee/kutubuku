@@ -14,13 +14,14 @@ export default function Read() {
 
   var [pdfViewport, setViewport] = useState<PDFPageProxy>();
 
+  const [pageNum, setPage] = useState(1);
+
   var pdf = useRef<HTMLDivElement>();
 
   useEffect(() => {
     function resize() {
       if (pdf.current && pdfViewport) {
         const rect = pdf.current.getBoundingClientRect();
-        const view = pdfViewport.getViewport({ scale: 1 });
         const CSS_UNITS = 96 / 72;
 
         setHeight(rect.height);
@@ -41,10 +42,18 @@ export default function Read() {
 
     window.addEventListener('resize', resize);
 
+    function click(e: MouseEvent) {
+      if (e.clientX >= window.innerWidth / 2) setPage(pageNum + 1);
+      else setPage(pageNum - 1);
+    }
+
+    window.addEventListener('click', click);
+
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('click', click);
     };
-  }, [pdfViewport])
+  }, [pageNum, pdfViewport])
 
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
@@ -67,8 +76,8 @@ export default function Read() {
     <Document inputRef={pdf} onLoadSuccess={(v) => {
       v.getPage(1).then(v => setViewport(v))
     }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>
-      <Page pageNumber={1} width={width} height={height} />
-      <Page pageNumber={2} width={width} height={height} />
+      <Page pageNumber={pageNum} width={width} height={height} />
+      <Page pageNumber={pageNum + 1} width={width} height={height} />
     </Document>
   </>
 }

@@ -1,4 +1,4 @@
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -13,6 +13,8 @@ import { GetServerSidePropsContext } from 'next';
 export default function Read({ progress }: { progress: number | null }) {
   const router = useRouter()
   const { id } = router.query;
+
+  const isSmol = useMediaQuery('(max-width: 500px)');
 
   const [width, setWidth] = useState<number | undefined>(100);
   const [height, setHeight] = useState<number | undefined>(100);
@@ -39,7 +41,7 @@ export default function Read({ progress }: { progress: number | null }) {
           if (pdfViewport.view[3] * CSS_UNITS > rect.height) return
         }
 
-        setWidth(rect.width / 2)
+        setWidth(isSmol ? rect.width : (rect.width / 2))
         setHeight(undefined)
       }
     }
@@ -51,12 +53,14 @@ export default function Read({ progress }: { progress: number | null }) {
     return () => {
       window.removeEventListener('resize', resize);
     };
-  }, [pdfViewport])
+  }, [isSmol, pdfViewport])
 
   useEffect(() => {
     function click(e: MouseEvent) {
-      if (e.clientX >= window.innerWidth / 2) setPage(pageNum + 2);
-      else if (pageNum > 0) setPage(pageNum - 2);
+      const add = isSmol ? 1 : 2;
+
+      if (e.clientX >= window.innerWidth / 2) setPage(pageNum + add);
+      else if (pageNum > 0) setPage(pageNum - add);
     }
 
     window.addEventListener('click', click);
@@ -64,7 +68,7 @@ export default function Read({ progress }: { progress: number | null }) {
     return (() => {
       window.removeEventListener('click', click);
     })
-  }, [id, pageNum, pages, progress])
+  }, [id, pageNum, pages, progress, isSmol])
 
   const throttled = useRef(debounce((page: number, id: string, pages: number) => {
     fetch('/api/book/' + id + '/progress', {
@@ -89,7 +93,7 @@ export default function Read({ progress }: { progress: number | null }) {
       setPages(v.numPages);
     }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>
       <Page pageIndex={pageNum} noData='' width={width} height={height} />
-      <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />
+      {!isSmol && <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />}
     </Document>
   </>
 }

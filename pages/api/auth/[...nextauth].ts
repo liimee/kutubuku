@@ -1,4 +1,4 @@
-import NextAuth, { CallbacksOptions, Session, User } from "next-auth"
+import NextAuth, { Session } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials";
 import crypto from 'crypto';
 import client from '../../../utils/prisma';

@@ -1,7 +1,8 @@
-import NextAuth from "next-auth"
+import NextAuth, { CallbacksOptions, Session, User } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials";
 import crypto from 'crypto';
 import client from '../../../utils/prisma';
+import { JWT } from "next-auth/jwt";
 
 function hash(str: string) {
   return crypto.createHash('sha256').update(str).digest('hex');
@@ -36,8 +37,11 @@ export const authOptions = {
     signIn: '/signin'
   },
   callbacks: {
-    async session({ session, token, user }) {
-      session.user.id = (await client.user.findFirst({ where: { id: token.id } }))?.id
+    async session({ session, token }: {
+      session: Session
+      token: JWT
+    }) {
+      session.user.id = (await client.user.findFirst({ where: { id: token.id as string } }))?.id
       return session
     }
   }

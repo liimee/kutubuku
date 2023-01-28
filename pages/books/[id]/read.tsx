@@ -3,20 +3,21 @@ import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { useEffect, useRef, useState } from 'react';
+import { LegacyRef, useEffect, useRef, useState } from 'react';
 import { unstable_getServerSession } from 'next-auth';
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import client from '@/utils/prisma';
 import debounce from 'lodash.debounce';
+import { GetServerSidePropsContext } from 'next';
 
-export default function Read({ progress }) {
+export default function Read({ progress }: { progress: number | null }) {
   const router = useRouter()
   const { id } = router.query;
 
   const [width, setWidth] = useState<number | undefined>(100);
   const [height, setHeight] = useState<number | undefined>(100);
 
-  var [pdfViewport, setViewport] = useState<PDFPageProxy>();
+  var [pdfViewport, setViewport] = useState<PDFPageProxy | undefined>();
 
   const [pageNum, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -72,10 +73,10 @@ export default function Read({ progress }) {
     })
   }, 2000))
 
-  useEffect(() => throttled.current(pageNum, id, pages), [pageNum, pages, id])
+  useEffect(() => throttled.current(pageNum, id as string, pages), [pageNum, pages, id])
 
   useEffect(() => {
-    setPage(Math.floor(progress * pages))
+    if (progress) setPage(Math.floor(progress * pages))
   }, [pages, progress])
 
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
@@ -96,7 +97,9 @@ export default function Read({ progress }) {
     }
     
     `}</style>
+    {/* @ts-ignore */}
     <Document inputRef={pdf} onLoadSuccess={(v) => {
+      {/* @ts-ignore */ }
       v.getPage(1).then(v => setViewport(v))
       setPages(v.numPages);
     }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>
@@ -106,30 +109,32 @@ export default function Read({ progress }) {
   </>
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const user = await unstable_getServerSession(context.req, context.res, authOptions);
 
-  const progress = await client.progress.findFirst({
-    where: {
-      userId: user.user.id,
-      bookId: context.query.id
-    },
-    select: {
-      progress: true
-    }
-  })
+  if (user) {
+    const progress = await client.progress.findFirst({
+      where: {
+        userId: user.user.id,
+        bookId: context.query.id as string
+      },
+      select: {
+        progress: true
+      }
+    })
 
-  if (progress) {
-    return {
-      props: {
-        progress: progress.progress
+    if (progress) {
+      return {
+        props: {
+          progress: progress.progress
+        }
       }
     }
-  } else {
-    return {
-      props: {
-        progress: null
-      }
+  }
+
+  return {
+    props: {
+      progress: null
     }
   }
 }

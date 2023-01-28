@@ -5,6 +5,7 @@ import SubdirectoryArrowLeft from '@mui/icons-material/SubdirectoryArrowLeft';
 
 import { getCsrfToken } from "next-auth/react"
 import { useRouter } from "next/router";
+import { GetServerSidePropsContext } from "next";
 
 export default function Index({ csrfToken }: { csrfToken: string }) {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function Index({ csrfToken }: { csrfToken: string }) {
   )
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       csrfToken: await getCsrfToken(context),

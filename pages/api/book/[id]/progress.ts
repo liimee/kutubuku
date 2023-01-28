@@ -10,7 +10,7 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
     await client.progress.upsert({
       create: {
         bookId: req.query.id as string,
-        userId: session.user.id,
+        userId: session.user.id as string,
         progress: parseFloat(req.body) || 0
       },
       update: {
@@ -18,8 +18,8 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
       },
       where: {
         userId_bookId: {
-          userId: session.user.id,
-          bookId: req.query.id
+          userId: session.user.id as string,
+          bookId: req.query.id as string
         }
       }
     })

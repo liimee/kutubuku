@@ -15,16 +15,29 @@ export default function App({ Component, pageProps }) {
       },
       secondary: {
         main: '#8d931d'
+      },
+      background: {
+        default: '#FFF8E9'
       }
     }
   })}>
     <CssBaseline />
     <SessionProvider>
-      {router.pathname != '/books/[id]/read' &&
+      {router.pathname != '/books/[id]/read' ?
         <>
           <TopBar />
           <Toolbar />
         </>
+        :
+        <style jsx global>
+          {
+            `
+            body {
+              background-color: #fff !important;
+            }
+            `
+          }
+        </style>
       }
       <Component {...pageProps} />
     </SessionProvider>

@@ -82,29 +82,14 @@ export default function Read({ progress }: { progress: number | null }) {
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
   return <>
-    <style jsx global>{`
-
-    body {
-      background-color: #fff !important;
-    }
-
-    .react-pdf__Document {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    `}</style>
     {/* @ts-ignore */}
     <Document inputRef={pdf} onLoadSuccess={(v) => {
       {/* @ts-ignore */ }
       v.getPage(1).then(v => setViewport(v))
       setPages(v.numPages);
     }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>
-      <Page pageIndex={pageNum} width={width} height={height} />
-      <Page pageIndex={pageNum + 1} width={width} height={height} />
+      <Page pageIndex={pageNum} noData='' width={width} height={height} />
+      <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />
     </Document>
   </>
 }

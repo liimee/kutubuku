@@ -1,3 +1,7 @@
-body {
-  background-color: #FFF8E9;
+.react-pdf__Document {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

@@ -43,8 +43,8 @@ export default function Read() {
     window.addEventListener('resize', resize);
 
     function click(e: MouseEvent) {
-      if (e.clientX >= window.innerWidth / 2) setPage(pageNum + 1);
-      else setPage(pageNum - 1);
+      if (e.clientX >= window.innerWidth / 2) setPage(pageNum + 2);
+      else if (pageNum > 1) setPage(pageNum - 2);
     }
 
     window.addEventListener('click', click);

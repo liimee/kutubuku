@@ -2,6 +2,7 @@ import BookThumb from "@/utils/bookthumb";
 import PlayArrow from "@mui/icons-material/PlayArrow";
 import { Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { Container } from "@mui/system";
+import Link from "next/link";
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react";
 
@@ -29,7 +30,7 @@ export default function Book() {
             }}>
               <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} alt="Book cover" />
             </Box>
-            <Button variant="text" startIcon={<PlayArrow />} sx={{ width: '100%' }}>Read</Button>
+            <Button variant="text" href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />} sx={{ width: '100%' }}>Read</Button>
           </div>
           <div>
             <Typography variant='h4' component='h1' lineHeight={1.1}>{book.title}</Typography>

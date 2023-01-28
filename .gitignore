@@ -40,3 +40,5 @@ next-env.d.ts
 
 /books.txt
 /public/thumbnails
+
+/public/pdf.worker.min.js

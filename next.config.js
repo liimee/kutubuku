@@ -4,8 +4,7 @@ const path = require('path')
 const CopyPlugin = require("copy-webpack-plugin");
 
 const pdfWorkerPath = require.resolve(
-  `pdfjs-dist/build/pdf.worker${process.env.NODE_ENV === "development" ? ".min" : ""
-  }.js`
+  `pdfjs-dist/build/pdf.worker.min.js`
 );
 
 const nextConfig = {

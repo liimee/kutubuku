@@ -4,8 +4,12 @@ import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { useEffect, useRef, useState } from 'react';
+import { unstable_getServerSession } from 'next-auth';
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import client from '@/utils/prisma';
+import debounce from 'lodash.debounce';
 
-export default function Read() {
+export default function Read({ progress }) {
   const router = useRouter()
   const { id } = router.query;
 
@@ -15,6 +19,7 @@ export default function Read() {
   var [pdfViewport, setViewport] = useState<PDFPageProxy>();
 
   const [pageNum, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
 
   var pdf = useRef<HTMLDivElement>();
 
@@ -42,18 +47,36 @@ export default function Read() {
 
     window.addEventListener('resize', resize);
 
+    return () => {
+      window.removeEventListener('resize', resize);
+    };
+  }, [pdfViewport])
+
+  useEffect(() => {
     function click(e: MouseEvent) {
       if (e.clientX >= window.innerWidth / 2) setPage(pageNum + 2);
-      else if (pageNum > 1) setPage(pageNum - 2);
+      else if (pageNum > 0) setPage(pageNum - 2);
     }
 
     window.addEventListener('click', click);
 
-    return () => {
-      window.removeEventListener('resize', resize);
+    return (() => {
       window.removeEventListener('click', click);
-    };
-  }, [pageNum, pdfViewport])
+    })
+  }, [id, pageNum, pages, progress])
+
+  const throttled = useRef(debounce((page: number, id: string, pages: number) => {
+    fetch('/api/book/' + id + '/progress', {
+      body: (page / pages).toString(),
+      method: 'POST'
+    })
+  }, 2000))
+
+  useEffect(() => throttled.current(pageNum, id, pages), [pageNum, pages, id])
+
+  useEffect(() => {
+    setPage(Math.floor(progress * pages))
+  }, [pages, progress])
 
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
@@ -75,9 +98,38 @@ export default function Read() {
     `}</style>
     <Document inputRef={pdf} onLoadSuccess={(v) => {
       v.getPage(1).then(v => setViewport(v))
+      setPages(v.numPages);
     }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>
-      <Page pageNumber={pageNum} width={width} height={height} />
-      <Page pageNumber={pageNum + 1} width={width} height={height} />
+      <Page pageIndex={pageNum} width={width} height={height} />
+      <Page pageIndex={pageNum + 1} width={width} height={height} />
     </Document>
   </>
+}
+
+export async function getServerSideProps(context) {
+  const user = await unstable_getServerSession(context.req, context.res, authOptions);
+
+  const progress = await client.progress.findFirst({
+    where: {
+      userId: user.user.id,
+      bookId: context.query.id
+    },
+    select: {
+      progress: true
+    }
+  })
+
+  if (progress) {
+    return {
+      props: {
+        progress: progress.progress
+      }
+    }
+  } else {
+    return {
+      props: {
+        progress: null
+      }
+    }
+  }
 }

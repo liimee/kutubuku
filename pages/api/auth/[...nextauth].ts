@@ -34,6 +34,12 @@ export const authOptions = {
   ],
   pages: {
     signIn: '/signin'
+  },
+  callbacks: {
+    async session({ session, token, user }) {
+      session.user.id = (await client.user.findFirst({ where: { id: token.id } }))?.id
+      return session
+    }
   }
 }
 

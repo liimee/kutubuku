@@ -83,12 +83,20 @@ export default function Read({ progress }: { progress: number | null }) {
     if (progress) setPage(Math.floor(progress * pages))
   }, [pages, progress])
 
+  useEffect(() => {
+    if (id) window.navigator.serviceWorker.controller?.postMessage({
+      do: 'downloadIfNotExist',
+      thing: '/api/book/' + id + '/file',
+      name: 'books'
+    })
+  }, [id])
+
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
   return <>
     {/* @ts-ignore */}
     <Document inputRef={pdf} onLoadSuccess={(v) => {
-      {/* @ts-ignore */ }
+      /* @ts-ignore */
       v.getPage(1).then(v => setViewport(v))
       setPages(v.numPages);
     }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>

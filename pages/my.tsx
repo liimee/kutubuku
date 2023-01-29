@@ -25,7 +25,13 @@ export default function MyBooks() {
     window.navigator.serviceWorker.controller?.postMessage({
       do: 'download',
       things: books?.map(v => '/books/' + v.bookId),
-      name: 'bookPage'
+      name: 'bookPages'
+    })
+
+    window.navigator.serviceWorker.controller?.postMessage({
+      do: 'download',
+      things: books?.map(v => '/books/' + v.bookId + '/read/'),
+      name: 'bookPages'
     })
 
     window.navigator.serviceWorker.controller?.postMessage({

@@ -4,8 +4,12 @@ import Explore from "@mui/icons-material/Explore";
 import { AppBar, Box, Button, Divider, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from "@mui/material";
 import NextLink from 'next/link';
 import { ReactNode, useState } from "react";
+import { useRouter } from "next/router";
+import ArrowBack from "@mui/icons-material/ArrowBack";
 
 export default function TopBar() {
+  const router = useRouter();
+
   const menu: {
     [key: string]: [ReactNode, string]
   } = {
@@ -21,6 +25,12 @@ export default function TopBar() {
     <>
       <AppBar position="fixed">
         <Toolbar>
+          {
+            (router.pathname != '/' && router.pathname != '/my') &&
+            <IconButton color='inherit' aria-label='back' sx={{ mr: 1 }} onClick={router.back}>
+              <ArrowBack />
+            </IconButton>
+          }
           <IconButton sx={{ display: { md: 'none' }, mr: 2 }} onClick={() => setOpen(true)} color="inherit" aria-label="menu">
             <Menu />
           </IconButton>

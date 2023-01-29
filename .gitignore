@@ -44,3 +44,4 @@ next-env.d.ts
 /public/pdf.worker.min.js
 /public/sw.js*
 /public/workbox*
+/public/fallback*

@@ -42,3 +42,5 @@ next-env.d.ts
 /public/thumbnails
 
 /public/pdf.worker.min.js
+/public/sw.js*
+/public/workbox*

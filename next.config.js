@@ -7,7 +7,11 @@ const pdfWorkerPath = require.resolve(
   `pdfjs-dist/build/pdf.worker.min.js`
 );
 
-const nextConfig = {
+const withPWA = require('next-pwa')({
+  dest: 'public'
+})
+
+const nextConfig = withPWA({
   reactStrictMode: true,
   webpack: (config) => {
     config.plugins.push(
@@ -23,6 +27,6 @@ const nextConfig = {
 
     return config;
   }
-}
+})
 
 module.exports = nextConfig

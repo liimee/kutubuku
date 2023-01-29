@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
+
 export default function BookThumb(props: any) {
-  return <img {...props} src={'/thumbnails/' + props.id + '.jpg'} />
+  return <Image width={150} height={260} {...props} src={'/thumbnails/' + props.id + '.jpg'} />
 }

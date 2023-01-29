@@ -1,3 +1,6 @@
+import { registerRoute } from 'workbox-routing';
+import { NetworkFirst, CacheFirst } from 'workbox-strategies';
+
 declare let self: ServiceWorkerGlobalScope
 
 self.addEventListener('message', event => {
@@ -14,7 +17,9 @@ self.addEventListener('message', event => {
       caches.open(data.name).then(cache => {
         cache.match(data.thing).then(v => {
           if (!v) {
-            cache.add(data.thing)
+            cache.add(data.thing).then(() => console.log('Downloaded ' + data.thing))
+          } else {
+            console.log(data.thing + ' is already in cache')
           }
         })
       })
@@ -22,6 +27,20 @@ self.addEventListener('message', event => {
   }
 });
 
+registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
+  cacheName: 'bookInfo'
+}), 'GET');
+registerRoute(/\/api\/\w+\/?$/, new NetworkFirst({
+  cacheName: 'apis'
+}), 'GET');
+registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
+  cacheName: 'books'
+}), 'GET');
+registerRoute(/\/books\/\w+(?:\/read)?\/?$/, new NetworkFirst({
+  cacheName: 'bookPages'
+}), 'GET')
+
+/* 
 self.addEventListener('fetch', (event) => {
   if (event) {
     const pathname = new URL(event.request.url).pathname;
@@ -79,5 +98,5 @@ self.addEventListener('fetch', (event) => {
     }
   }
 });
-
+ */
 export { }

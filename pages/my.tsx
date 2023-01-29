@@ -15,9 +15,29 @@ export default function MyBooks() {
     })));
   }, [])
 
+  useEffect(() => {
+    window.navigator.serviceWorker.controller?.postMessage({
+      do: 'download',
+      things: books?.map(v => '/api/book/' + v.bookId),
+      name: 'bookInfo'
+    })
+
+    window.navigator.serviceWorker.controller?.postMessage({
+      do: 'download',
+      things: books?.map(v => '/books/' + v.bookId),
+      name: 'bookPage'
+    })
+
+    window.navigator.serviceWorker.controller?.postMessage({
+      do: 'download',
+      things: ['/api/my'],
+      name: 'apis'
+    })
+  }, [books])
+
   return <Container maxWidth='sm' sx={{ py: 3 }}>
     <Stack>
-      <Typography component='h1' variant='h4' sx={{mb: 2}}>My Books</Typography>
+      <Typography component='h1' variant='h4' sx={{ mb: 2 }}>My Books</Typography>
       {/* @ts-ignore */}
       <BookGrid list={books} />
     </Stack>

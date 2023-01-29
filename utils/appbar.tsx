@@ -26,22 +26,26 @@ export default function TopBar() {
       <AppBar position="fixed">
         <Toolbar>
           {
-            (router.pathname != '/' && router.pathname != '/my') &&
+            (router.pathname != '/' && router.pathname != '/my' && router.pathname != '/signin') &&
             <IconButton color='inherit' aria-label='back' sx={{ mr: 1 }} onClick={router.back}>
               <ArrowBack />
             </IconButton>
           }
-          <IconButton sx={{ display: { md: 'none' }, mr: 2 }} onClick={() => setOpen(true)} color="inherit" aria-label="menu">
-            <Menu />
-          </IconButton>
+          {router.pathname != '/signin' &&
+            <IconButton sx={{ display: { md: 'none' }, mr: 2 }} onClick={() => setOpen(true)} color="inherit" aria-label="menu">
+              <Menu />
+            </IconButton>
+          }
           <Link href='/' component={NextLink} color='inherit' underline='hover'><Typography variant="h6">kutubuku</Typography></Link>
-          <Box ml={2} sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {
-              Object.keys(menu).map(v =>
-                <Button key={v} variant="text" href={v} startIcon={menu[v][0]} sx={{ color: 'inherit' }} LinkComponent={NextLink}>{menu[v][1]}</Button>
-              )
-            }
-          </Box>
+          {router.pathname != '/signin' &&
+            <Box ml={2} sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+              {
+                Object.keys(menu).map(v =>
+                  <Button key={v} variant="text" href={v} startIcon={menu[v][0]} sx={{ color: 'inherit' }} LinkComponent={NextLink}>{menu[v][1]}</Button>
+                )
+              }
+            </Box>
+          }
         </Toolbar>
       </AppBar>
       <Drawer

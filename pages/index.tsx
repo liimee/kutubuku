@@ -1,7 +1,5 @@
 import BookGrid from "@/utils/bookgrid";
-import BookThumb from "@/utils/bookthumb";
-import { Container, Grid, CircularProgress, Box, Button } from "@mui/material";
-import Link from "next/link";
+import { Container, Box, Typography, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function Index() {
@@ -12,12 +10,11 @@ export default function Index() {
   }, [])
 
   return (
-    <>
-      <Container maxWidth="sm">
-        <Box sx={{ p: 3 }} component="main">
-          <BookGrid list={list} />
-        </Box>
-      </Container>
-    </>
+    <Container maxWidth="sm" sx={{ py: 3 }}>
+      <Stack>
+        <Typography component='h1' variant='h4' sx={{ mb: 2 }}>Explore</Typography>
+        <BookGrid list={list} />
+      </Stack>
+    </Container>
   )
 }

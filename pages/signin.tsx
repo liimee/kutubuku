@@ -2,13 +2,15 @@ import { Typography, Box, Button, Paper, TextField, InputAdornment, Alert } from
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import VpnKey from '@mui/icons-material/VpnKey';
 import SubdirectoryArrowLeft from '@mui/icons-material/SubdirectoryArrowLeft';
-
-import { getCsrfToken } from "next-auth/react"
 import { useRouter } from "next/router";
-import { GetServerSidePropsContext } from "next";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { signIn } from "next-auth/react";
 
-export default function Index({ csrfToken }: { csrfToken: string }) {
+export default function Index() {
   const router = useRouter();
+
+  const [username, setUser] = useState('');
+  const [pass, setPass] = useState('');
 
   return (
     <Box display='flex'
@@ -24,21 +26,27 @@ export default function Index({ csrfToken }: { csrfToken: string }) {
           Sign in
         </Typography>
 
-        <form method="post" action="/api/auth/callback/credentials">
+        <form onSubmit={(e: FormEvent) => {
+          e.preventDefault();
+
+          signIn('credentials', {
+            username,
+            password: pass,
+            callbackUrl: router.query.callbackUrl?.toString() || '/'
+          });
+        }}>
           {router.query.error && router.query.error != 'SessionRequired' && <Alert severity="error">
             {router.query.error == 'CredentialsSignin' ?
               "Consider checking your credentials?" : "It looks like the server is having an error. Sorry!"
             }
           </Alert>}
-
-          <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-          <TextField label="Username" name="username" required variant="outlined" fullWidth InputProps={{
+          <TextField label="Username" name="username" value={username} onInput={(e: ChangeEvent<HTMLInputElement>) => setUser(e.target.value)} required variant="outlined" fullWidth InputProps={{
             startAdornment:
               <InputAdornment position="start">
                 <AccountCircle />
               </InputAdornment>
           }} />
-          <TextField label="Password" name="password" required variant="outlined" fullWidth type='password' InputProps={{
+          <TextField label="Password" name="password" required variant="outlined" fullWidth type='password' value={pass} onInput={(e: ChangeEvent<HTMLInputElement>) => setPass(e.target.value)} InputProps={{
             startAdornment:
               <InputAdornment position="start">
                 <VpnKey />
@@ -50,12 +58,4 @@ export default function Index({ csrfToken }: { csrfToken: string }) {
       </Paper>
     </Box>
   )
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return {
-    props: {
-      csrfToken: await getCsrfToken(context),
-    },
-  }
 }

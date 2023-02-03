@@ -23,6 +23,13 @@ self.addEventListener('message', event => {
           }
         })
       })
+    } else if (data.do == 'getDownloaded') {
+      caches.open('books').then(cache => {
+        cache.keys().then(keys => {
+          const mapped = keys.map(v => v.url.match(/\/api\/book\/(\w+)\/file\/?$/)![1]);
+          event.ports[0].postMessage(mapped);
+        });
+      })
     }
   }
 });

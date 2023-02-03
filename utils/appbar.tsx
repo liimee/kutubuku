@@ -41,12 +41,12 @@ export default function TopBar() {
               <Menu />
             </IconButton>
           }
-          <Link href='/' component={NextLink} color='inherit' underline='hover'><Typography variant="h6">kutubuku</Typography></Link>
+          <Link href='/' sx={{ flexGrow: 1 }} component={NextLink} color='inherit' underline='hover'><Typography variant="h6">kutubuku</Typography></Link>
           {router.pathname != '/signin' &&
             <Box ml={2} sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {
                 Object.keys(menu).map(v =>
-                  <Button key={v} variant="text" href={v} startIcon={menu[v][0]} sx={{ color: 'inherit' }} LinkComponent={NextLink}>{menu[v][1]}</Button>
+                  <Button key={v} variant="text" href={v} startIcon={menu[v][0]} sx={{ color: 'inherit', mx: 1 }} LinkComponent={NextLink}>{menu[v][1]}</Button>
                 )
               }
             </Box>

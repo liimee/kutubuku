@@ -4,18 +4,15 @@ import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { useEffect, useRef, useState } from 'react';
-import { unstable_getServerSession } from 'next-auth';
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import client from '@/utils/prisma';
 import debounce from 'lodash.debounce';
-import { GetServerSidePropsContext } from 'next';
 
-export default function Read({ progress }: { progress: number | null }) {
+export default function Read() {
   const router = useRouter()
   const { id } = router.query;
 
   const isSmol = useMediaQuery('(max-width: 500px)');
 
+  const [progress, setProgress] = useState(0);
   const [width, setWidth] = useState<number | undefined>(100);
   const [height, setHeight] = useState<number | undefined>(100);
 
@@ -25,6 +22,10 @@ export default function Read({ progress }: { progress: number | null }) {
   const [pages, setPages] = useState(1);
 
   var pdf = useRef<HTMLDivElement>();
+
+  useEffect(() => {
+    if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => setProgress(v.progress));
+  }, [id])
 
   useEffect(() => {
     function resize() {
@@ -104,34 +105,4 @@ export default function Read({ progress }: { progress: number | null }) {
       {!isSmol && <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />}
     </Document>
   </>
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const user = await unstable_getServerSession(context.req, context.res, authOptions);
-
-  if (user) {
-    const progress = await client.progress.findFirst({
-      where: {
-        userId: user.user.id,
-        bookId: context.query.id as string
-      },
-      select: {
-        progress: true
-      }
-    })
-
-    if (progress) {
-      return {
-        props: {
-          progress: progress.progress
-        }
-      }
-    }
-  }
-
-  return {
-    props: {
-      progress: null
-    }
-  }
 }

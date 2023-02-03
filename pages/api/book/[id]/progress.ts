@@ -7,24 +7,36 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
   const session = await unstable_getServerSession(req, res, authOptions)
 
   if (session) {
-    await client.progress.upsert({
-      create: {
-        bookId: req.query.id as string,
-        userId: session.user.id as string,
-        progress: parseFloat(req.body) || 0
-      },
-      update: {
-        progress: parseFloat(req.body) || 0
-      },
-      where: {
-        userId_bookId: {
+    if (req.method === 'POST') {
+      await client.progress.upsert({
+        create: {
+          bookId: req.query.id as string,
           userId: session.user.id as string,
-          bookId: req.query.id as string
+          progress: parseFloat(req.body) || 0
+        },
+        update: {
+          progress: parseFloat(req.body) || 0
+        },
+        where: {
+          userId_bookId: {
+            userId: session.user.id as string,
+            bookId: req.query.id as string
+          }
         }
-      }
-    })
+      })
 
-    res.send('ok?')
+      res.send('ok?')
+    } else {
+      res.json(await client.progress.findFirst({
+        where: {
+          userId: session.user.id,
+          bookId: req.query.id as string
+        },
+        select: {
+          progress: true
+        }
+      }))
+    }
   } else {
     res.status(401).send('Unauthorized :)');
   }

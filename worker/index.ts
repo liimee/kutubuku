@@ -3,6 +3,17 @@ import { NetworkFirst, CacheFirst } from 'workbox-strategies';
 
 declare let self: ServiceWorkerGlobalScope
 
+function mapKeys(keys: readonly Request[]) {
+  return keys.map(v => v.url.match(/\/api\/book\/(\w+)\/file\/?$/)![1])
+}
+
+function returnKeys(event: ExtendableMessageEvent, cache: Cache) {
+  cache.keys().then(keys => {
+    const mapped = mapKeys(keys);
+    event.ports[0].postMessage(mapped);
+  });
+}
+
 self.addEventListener('message', event => {
   if (event) {
     const { data } = event;
@@ -17,18 +28,26 @@ self.addEventListener('message', event => {
       caches.open(data.name).then(cache => {
         cache.match(data.thing).then(v => {
           if (!v) {
-            cache.add(data.thing).then(() => console.log('Downloaded ' + data.thing))
+            cache.add(data.thing).then(() => {
+              console.log('Downloaded ' + data.thing);
+
+              returnKeys(event, cache)
+            })
           } else {
             console.log(data.thing + ' is already in cache')
+            returnKeys(event, cache)
           }
         })
       })
     } else if (data.do == 'getDownloaded') {
       caches.open('books').then(cache => {
-        cache.keys().then(keys => {
-          const mapped = keys.map(v => v.url.match(/\/api\/book\/(\w+)\/file\/?$/)![1]);
-          event.ports[0].postMessage(mapped);
-        });
+        returnKeys(event, cache)
+      })
+    } else if (data.do == 'deleteBook') {
+      caches.open('books').then(cache => {
+        cache.delete(`/api/book/${data.thing}/file`).then(() => {
+          returnKeys(event, cache)
+        })
       })
     }
   }

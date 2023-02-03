@@ -1,6 +1,7 @@
 import BookGrid from "@/utils/bookgrid";
 import { Container, Stack, Typography } from "@mui/material";
 import { Progress } from "@prisma/client";
+import Head from "next/head";
 import { useEffect, useState } from "react";
 
 export default function MyBooks() {
@@ -47,5 +48,8 @@ export default function MyBooks() {
       {/* @ts-ignore */}
       <BookGrid list={books} />
     </Stack>
+    <Head>
+      <title>My Books</title>
+    </Head>
   </Container>
 }

@@ -5,6 +5,7 @@ import SubdirectoryArrowLeft from '@mui/icons-material/SubdirectoryArrowLeft';
 import { useRouter } from "next/router";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
+import Head from "next/head";
 
 export default function Index() {
   const router = useRouter();
@@ -56,6 +57,9 @@ export default function Index() {
           <Box textAlign='end'><Button type='submit' variant="contained" endIcon={<SubdirectoryArrowLeft />}>Sign in</Button></Box>
         </form>
       </Paper>
+      <Head>
+        <title>Sign in</title>
+      </Head>
     </Box>
   )
 }

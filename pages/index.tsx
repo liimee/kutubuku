@@ -1,5 +1,6 @@
 import BookGrid from "@/utils/bookgrid";
-import { Container, Box, Typography, Stack } from "@mui/material";
+import { Container, Typography, Stack } from "@mui/material";
+import Head from "next/head";
 import { useEffect, useState } from "react";
 
 export default function Index() {
@@ -15,6 +16,9 @@ export default function Index() {
         <Typography component='h1' variant='h4' sx={{ mb: 2 }}>Explore</Typography>
         <BookGrid list={list} />
       </Stack>
+      <Head>
+        <title>kutubuku</title>
+      </Head>
     </Container>
   )
 }

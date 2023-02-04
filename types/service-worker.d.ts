@@ -115,6 +115,7 @@ interface ExtendableMessageEvent extends ExtendableEvent {
 // ServiceWorkerGlobalScope
 
 interface ServiceWorkerGlobalScope {
+  indexedDB: IDBFactory;
   caches: CacheStorage;
   clients: Clients;
   registration: ServiceWorkerRegistration;

@@ -24,7 +24,10 @@ export default function Read() {
   var pdf = useRef<HTMLDivElement>();
 
   useEffect(() => {
-    if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => setProgress(v.progress));
+    if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => {
+      console.log(v)
+      setProgress(v.progress)
+    });
   }, [id])
 
   useEffect(() => {

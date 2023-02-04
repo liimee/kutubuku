@@ -1,5 +1,6 @@
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst } from 'workbox-strategies';
+import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
+import { BackgroundSyncPlugin } from 'workbox-background-sync';
 
 declare let self: ServiceWorkerGlobalScope
 
@@ -53,9 +54,35 @@ self.addEventListener('message', event => {
   }
 });
 
+const bgSync = new BackgroundSyncPlugin('progressQueue', {
+  maxRetentionTime: 24 * 60
+});
+
 registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
   cacheName: 'bookInfo'
 }), 'GET');
+registerRoute(/\/api\/book\/\w+\/progress?\/?$/, (e) => {
+  return new Promise((resolve) => {
+    new NetworkOnly().handle(e).then(resolve).catch(() => {
+      const db = self.indexedDB.open('workbox-background-sync')
+
+      db.onsuccess = () => {
+        const contents = db.result;
+
+        const c = contents.transaction(["requests"]).objectStore("requests").index('queueName').get('progressQueue')
+        c.onsuccess = e => {
+          console.log((e.target as IDBRequest).result)
+          resolve(new Response(JSON.stringify({
+            progress: parseFloat(new TextDecoder("utf-8").decode((e.target as IDBRequest).result.requestData.body))
+          })))
+        }
+      }
+    });
+  })
+}, 'GET')
+registerRoute(/\/api\/book\/\w+\/progress?\/?$/, new NetworkOnly({
+  plugins: [bgSync]
+}), 'POST')
 registerRoute(/\/api\/\w+\/?$/, new NetworkFirst({
   cacheName: 'apis'
 }), 'GET');
@@ -65,7 +92,6 @@ registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
 registerRoute(/\/books\/\w+(?:\/read)?\/?$/, new NetworkFirst({
   cacheName: 'bookPages'
 }), 'GET')
-
 /* 
 self.addEventListener('fetch', (event) => {
   if (event) {

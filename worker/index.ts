@@ -96,13 +96,10 @@ registerRoute(/\/api\/book\/\w+\/progress?\/?$/, (e) => {
     });
   });
 }, 'GET')
-registerRoute(/\/api\/book\/\w+\/progress?\/?$/, new NetworkOnly({
-  plugins: [{
-    fetchDidFail: async e => {
-      bgSync.pushRequest(e)
-    }
-  }]
-}), 'POST')
+registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (req) => {
+  bgSync.pushRequest(req)
+  return new Response('ok?')
+}, 'POST')
 registerRoute(/\/api\/\w+\/?$/, new NetworkFirst({
   cacheName: 'apis'
 }), 'GET');

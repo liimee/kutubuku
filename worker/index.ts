@@ -63,21 +63,31 @@ registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
 }), 'GET');
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, (e) => {
   return new Promise((resolve) => {
-    new NetworkOnly().handle(e).then(resolve).catch(() => {
+    try {
       const db = self.indexedDB.open('workbox-background-sync')
 
       db.onsuccess = () => {
         const contents = db.result;
 
-        const c = contents.transaction(["requests"]).objectStore("requests").index('queueName').get('progressQueue')
-        c.onsuccess = e => {
-          console.log((e.target as IDBRequest).result)
-          resolve(new Response(JSON.stringify({
-            progress: parseFloat(new TextDecoder("utf-8").decode((e.target as IDBRequest).result.requestData.body))
-          })))
+        try {
+          const c = contents.transaction('requests').objectStore("requests").index('queueName').getAll('progressQueue');
+          c.onsuccess = e => {
+            console.log((e.target as IDBRequest).result)
+            // @ts-ignore
+            const res = (e.target as IDBRequest).result.reduce(function (max, obj) {
+              return obj.id > max.id ? obj : max;
+            });
+            resolve(new Response(JSON.stringify({
+              progress: parseFloat(new TextDecoder("utf-8").decode(res.requestData.body))
+            })))
+          }
+        } catch (_) {
+          new NetworkFirst().handle(e).then(resolve)
         }
       }
-    });
+    } catch (_) {
+      new NetworkFirst().handle(e).then(resolve)
+    }
   })
 }, 'GET')
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, new NetworkOnly({

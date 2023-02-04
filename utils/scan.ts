@@ -23,7 +23,7 @@ export default function scan() {
     }
   }
 
-  books.filter(v => lstatSync(v).isDirectory()).forEach(v => {
+  books.filter(v => v.trim().length > 0 && existsSync(v)).filter(v => lstatSync(v).isDirectory()).forEach(v => {
     glob(path.join(v, '*.pdf'), {}, (_, files) => {
       console.log(files)
       files.forEach(v => {

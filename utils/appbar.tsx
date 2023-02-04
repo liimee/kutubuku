@@ -1,13 +1,15 @@
 import Menu from "@mui/icons-material/Menu";
 import Class from "@mui/icons-material/Class";
 import Explore from "@mui/icons-material/Explore";
-import { AppBar, Box, Button, Divider, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, Menu as MenuComp, MenuItem } from "@mui/material";
+import { AppBar, Box, Button, Divider, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, Menu as MenuComp, MenuItem, Snackbar } from "@mui/material";
 import NextLink from 'next/link';
 import { ReactNode, MouseEvent, useState } from "react";
 import { useRouter } from "next/router";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import { signOut, useSession } from "next-auth/react";
 import Face from "@mui/icons-material/Face";
+import Logout from "@mui/icons-material/Logout";
+import SyncIcon from '@mui/icons-material/Sync';
 
 export default function TopBar() {
   const router = useRouter();
@@ -23,6 +25,7 @@ export default function TopBar() {
   }
 
   const [drawer, setOpen] = useState(false);
+  const [snack, setSnack] = useState(false);
 
   const [userOpen, setUser] = useState<HTMLElement | null>(null);
 
@@ -79,7 +82,18 @@ export default function TopBar() {
                 open={userOpen !== null}
                 onClose={() => setUser(null)}
               >
-                <MenuItem onClick={() => signOut()}>Sign out</MenuItem>
+                <MenuItem onClick={() => {
+                  fetch('/api/scan').catch(() => { });
+                  setSnack(true);
+                  setUser(null)
+                }}>
+                  <ListItemIcon><SyncIcon /></ListItemIcon>
+                  Scan library
+                </MenuItem>
+                <MenuItem onClick={() => signOut()}>
+                  <ListItemIcon><Logout /></ListItemIcon>
+                  Sign out
+                </MenuItem>
               </MenuComp>
             </div>
           }
@@ -107,6 +121,7 @@ export default function TopBar() {
           )}
         </List>
       </Drawer>
+      <Snackbar message='Scan requested.' open={snack} autoHideDuration={5000} onClose={() => setSnack(false)} />
     </>
   )
 }

@@ -1,6 +1,6 @@
 import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
-import { BackgroundSyncPlugin } from 'workbox-background-sync';
+import { BackgroundSyncPlugin, Queue } from 'workbox-background-sync';
 
 declare let self: ServiceWorkerGlobalScope
 
@@ -54,44 +54,54 @@ self.addEventListener('message', event => {
   }
 });
 
-const bgSync = new BackgroundSyncPlugin('progressQueue', {
+const bgSync = new Queue('progressQueue', {
   maxRetentionTime: 24 * 60
-});
+})
 
 registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
   cacheName: 'bookInfo'
 }), 'GET');
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, (e) => {
   return new Promise((resolve) => {
-    try {
-      const db = self.indexedDB.open('workbox-background-sync')
-
-      db.onsuccess = () => {
-        const contents = db.result;
+    bgSync.replayRequests().finally(() => {
+      new NetworkOnly().handle(e).then(resolve, () => {
+        function sendCache() {
+          caches.match(e.request).then(v => {
+            if (v) resolve(v);
+            else resolve(new Response(JSON.stringify({
+              progress: 0
+            })))
+          })
+        }
 
         try {
-          const c = contents.transaction('requests').objectStore("requests").index('queueName').getAll('progressQueue');
-          c.onsuccess = e => {
-            console.log((e.target as IDBRequest).result)
-            // @ts-ignore
-            const res = (e.target as IDBRequest).result.reduce(function (max, obj) {
-              return obj.id > max.id ? obj : max;
-            });
-            resolve(new Response(JSON.stringify({
-              progress: parseFloat(new TextDecoder("utf-8").decode(res.requestData.body))
-            })))
-          }
+          bgSync.getAll().then(v => {
+            if (v.length > 0) {
+              const latest = v.reduce((max, obj) => {
+                return obj.timestamp! > max.timestamp! ? obj : max;
+              })
+
+              latest.request.text().then(text =>
+                resolve(new Response(JSON.stringify({
+                  progress: parseFloat(text)
+                }))))
+            } else {
+              sendCache();
+            }
+          })
         } catch (_) {
-          new NetworkFirst().handle(e).then(resolve)
+          sendCache();
         }
-      }
-    } catch (_) {
-      new NetworkFirst().handle(e).then(resolve)
-    }
-  })
+      })
+    });
+  });
 }, 'GET')
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, new NetworkOnly({
-  plugins: [bgSync]
+  plugins: [{
+    fetchDidFail: async e => {
+      bgSync.pushRequest(e)
+    }
+  }]
 }), 'POST')
 registerRoute(/\/api\/\w+\/?$/, new NetworkFirst({
   cacheName: 'apis'

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { useEffect, useRef, useState } from 'react';
+import { cache, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 
 export default function Read() {
@@ -27,6 +27,11 @@ export default function Read() {
     if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => {
       console.log(v)
       setProgress(v.progress)
+      window.workbox.messageSW({
+        do: 'download',
+        things: [`/api/book/${id}/progress`],
+        name: 'apis'
+      })
     });
   }, [id])
 
@@ -78,7 +83,11 @@ export default function Read() {
     fetch('/api/book/' + id + '/progress', {
       body: (page / pages).toString(),
       method: 'POST'
-    }).catch(() => { })
+    }).then(() => window.workbox.messageSW({
+      do: 'download',
+      things: [`/api/book/${id}/progress`],
+      name: 'apis'
+    })).catch(() => { })
   }, 2000))
 
   useEffect(() => throttled.current(pageNum, id as string, pages), [pageNum, pages, id])
@@ -88,7 +97,7 @@ export default function Read() {
   }, [pages, progress])
 
   useEffect(() => {
-    if (id) window.navigator.serviceWorker.controller?.postMessage({
+    if (id) window.workbox.messageSW({
       do: 'downloadIfNotExist',
       thing: '/api/book/' + id + '/file',
       name: 'books'

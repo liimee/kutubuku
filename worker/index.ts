@@ -1,6 +1,6 @@
 import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
-import { BackgroundSyncPlugin, Queue } from 'workbox-background-sync';
+import { Queue } from 'workbox-background-sync';
 
 declare let self: ServiceWorkerGlobalScope
 

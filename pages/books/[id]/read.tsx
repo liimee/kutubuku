@@ -75,7 +75,7 @@ export default function Read() {
     fetch('/api/book/' + id + '/progress', {
       body: (page / pages).toString(),
       method: 'POST'
-    })
+    }).catch(() => { })
   }, 2000))
 
   useEffect(() => throttled.current(pageNum, id as string, pages), [pageNum, pages, id])

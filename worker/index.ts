@@ -1,6 +1,6 @@
 import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
-import { Queue } from 'workbox-background-sync';
+import { Queue, QueueStore } from 'workbox-background-sync';
 
 declare let self: ServiceWorkerGlobalScope
 
@@ -116,8 +116,25 @@ registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
   }
 }, 'GET')
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (req) => {
-  bgSync.pushRequest(req)
-  return new Response('ok?')
+  try {
+    const res = await new NetworkOnly().handle(req);
+
+    try {
+      const queue = new QueueStore('progressQueue');
+      const actualQueue = await queue.getAll();
+      for (let v of actualQueue.filter(v => v.requestData.url === req.request.url)) {
+        await queue.deleteEntry(v.id)
+      }
+    } catch (_) { }
+
+    console.log('sent through net')
+
+    return res
+  } catch (_) {
+    await bgSync.pushRequest(req)
+    console.log('added to queue')
+    return new Response('ok?')
+  }
 }, 'POST')
 registerRoute(/\/api\/\w+\/?$/, new NetworkFirst({
   cacheName: 'apis'
@@ -128,6 +145,7 @@ registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
 registerRoute(/\/books\/\w+(?:\/read)?\/?$/, new NetworkFirst({
   cacheName: 'bookPages'
 }), 'GET')
+registerRoute(/\/pdf\.worker\.min\.js\/?$/, new CacheFirst());
 /* 
 self.addEventListener('fetch', (event) => {
   if (event) {

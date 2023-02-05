@@ -19,6 +19,7 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
 
       if (exists) {
         if (new Date(exists.lastUpdated) > new Date(req.body.now)) {
+          console.log('db is newer :)')
           res.send('db is newer :)');
           return;
         }
@@ -28,11 +29,11 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
         create: {
           bookId: req.query.id as string,
           userId: session.user.id as string,
-          progress: req.body.progress || 0,
+          progress: req.body.progress,
           lastUpdated: req.body.now
         },
         update: {
-          progress: req.body.progress || 0,
+          progress: req.body.progress,
           lastUpdated: req.body.now
         },
         where: {
@@ -41,13 +42,13 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
             bookId: req.query.id as string
           }
         }
-      })
+      }).catch(console.log)
 
       res.send('ok?')
     } else {
       res.json(await client.progress.findFirst({
         where: {
-          userId: session.user.id,
+          userId: session.user.id as string,
           bookId: req.query.id as string
         },
         select: {

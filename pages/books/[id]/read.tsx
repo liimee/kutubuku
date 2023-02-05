@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { cache, useEffect, useRef, useState } from 'react';
+import { cache, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 
 export default function Read() {
@@ -64,34 +64,49 @@ export default function Read() {
     };
   }, [isSmol, pdfViewport])
 
+  const deb = useRef(debounce((id, pageNum, pages) => {
+    fetch('/api/book/' + id + '/progress', {
+      body: JSON.stringify({
+        progress: (pageNum / pages),
+        now: new Date().toISOString()
+      }),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+      method: 'POST'
+    }).then(() => window.workbox.messageSW({
+      do: 'download',
+      things: [`/api/book/${id}/progress`],
+      name: 'apis'
+    })).catch(() => { })
+  }, 2000, {
+    trailing: true,
+    leading: true
+  })).current;
+
   useEffect(() => {
     function click(e: MouseEvent) {
       const add = isSmol ? 1 : 2;
 
-      if (e.clientX >= window.innerWidth / 2) setPage(pageNum + add);
-      else if (pageNum > 0) setPage(pageNum - add);
+      setPage(p => {
+        let g = p;
 
-      debounce(() => {
-        fetch('/api/book/' + id + '/progress', {
-          body: JSON.stringify({
-            progress: (pageNum / pages),
-            now: new Date().toISOString()
-          }),
-          method: 'POST'
-        }).then(() => window.workbox.messageSW({
-          do: 'download',
-          things: [`/api/book/${id}/progress`],
-          name: 'apis'
-        })).catch(() => { })
-      }, 2000)();
+        if (e.clientX >= window.innerWidth / 2) g = p + add
+        else if (p > 0) g = p - add;
+
+        deb(id, g, pages);
+
+        return g;
+      });
     }
 
     window.addEventListener('click', click);
 
     return (() => {
       window.removeEventListener('click', click);
+      deb.cancel();
     })
-  }, [id, pageNum, pages, progress, isSmol])
+  }, [deb, id, isSmol, pages])
 
   useEffect(() => {
     if (progress) setPage(Math.floor(progress * pages))

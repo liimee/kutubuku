@@ -60,7 +60,7 @@ export default function TopBar() {
               <Menu />
             </IconButton>
           }
-          <Link href='/' sx={{ flexGrow: 1 }} component={NextLink} color='inherit' underline='hover'><Typography variant="h6">kutubuku</Typography></Link>
+          <Link href='/my' sx={{ flexGrow: 1 }} component={NextLink} color='inherit' underline='hover'><Typography variant="h6">kutubuku</Typography></Link>
           {router.pathname != '/signin' &&
             <Box ml={2} sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {

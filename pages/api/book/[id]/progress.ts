@@ -29,11 +29,11 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
         create: {
           bookId: req.query.id as string,
           userId: session.user.id as string,
-          progress: req.body.progress,
+          progress: req.body.progress || 0,
           lastUpdated: req.body.now
         },
         update: {
-          progress: req.body.progress,
+          progress: req.body.progress || 0,
           lastUpdated: req.body.now
         },
         where: {

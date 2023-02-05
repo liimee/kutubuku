@@ -1,4 +1,4 @@
-import { AppBar, CircularProgress, IconButton, Slide, Toolbar, useMediaQuery } from '@mui/material';
+import { AppBar, CircularProgress, Drawer, IconButton, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -6,6 +6,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import ListIcon from '@mui/icons-material/List';
 
 export default function Read() {
   const router = useRouter()
@@ -23,6 +24,11 @@ export default function Read() {
   const [pages, setPages] = useState(1);
 
   const [bar, setBar] = useState(false);
+  const [toc, setToc] = useState<{
+    index: number,
+    title: string
+  }[]>([]);
+  const [drawer, setDrawer] = useState(false);
 
   var pdf = useRef<HTMLDivElement>();
 
@@ -143,6 +149,18 @@ export default function Read() {
       /* @ts-ignore */
       v.getPage(1).then(v => setViewport(v))
       setPages(v.numPages);
+      v.getOutline().then(outlines => {
+        const res: { index: number; title: string; }[] = [];
+
+        outlines.forEach(outline => {
+          v.getPageIndex(outline.dest![0]).then(index => res.push({
+            index,
+            title: outline.title
+          }))
+        })
+
+        setToc(res);
+      });
     }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>
       <Page pageIndex={pageNum} noData='' width={width} height={height} />
       {!isSmol && <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />}
@@ -153,8 +171,26 @@ export default function Read() {
           <IconButton color='inherit' onClick={router.back}>
             <ArrowBack />
           </IconButton>
+          <div style={{ flexGrow: 1 }} />
+          <IconButton color='inherit' onClick={() => setDrawer(true)}>
+            <ListIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
     </Slide>
+    <Drawer anchor='right' open={drawer} onClose={() => setDrawer(false)}>
+      <List>
+        {toc.map((v, i) => <ListItem key={i}>
+          <ListItemButton onClick={() => {
+            setPage(v.index);
+            deb(id, v.index, pages);
+
+            setDrawer(false);
+          }}>
+            <ListItemText primary={v.title} secondary={v.index + 1} />
+          </ListItemButton>
+        </ListItem>)}
+      </List>
+    </Drawer>
   </>
 }

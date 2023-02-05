@@ -1,10 +1,11 @@
-import { CircularProgress, useMediaQuery } from '@mui/material';
+import { AppBar, CircularProgress, IconButton, Slide, Toolbar, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { cache, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
+import ArrowBack from '@mui/icons-material/ArrowBack';
 
 export default function Read() {
   const router = useRouter()
@@ -20,6 +21,8 @@ export default function Read() {
 
   const [pageNum, setPage] = useState(1);
   const [pages, setPages] = useState(1);
+
+  const [bar, setBar] = useState(false);
 
   var pdf = useRef<HTMLDivElement>();
 
@@ -86,18 +89,30 @@ export default function Read() {
 
   useEffect(() => {
     function click(e: MouseEvent) {
-      const add = isSmol ? 1 : 2;
+      if (e.clientY > window.innerHeight * 0.64) {
+        setBar(b => !b);
+      } else {
+        setBar(b => {
+          if (b) {
+            return false
+          } else {
+            const add = isSmol ? 1 : 2;
 
-      setPage(p => {
-        let g = p;
+            setPage(p => {
+              let g = p;
 
-        if (e.clientX >= window.innerWidth / 2) g = p + add
-        else if (p > 0) g = p - add;
+              if (e.clientX >= window.innerWidth / 2) g = p + add
+              else if (p > 0) g = p - add;
 
-        deb(id, g, pages);
+              deb(id, g, pages);
 
-        return g;
-      });
+              return g;
+            });
+          }
+
+          return b
+        });
+      }
     }
 
     window.addEventListener('click', click);
@@ -106,7 +121,7 @@ export default function Read() {
       window.removeEventListener('click', click);
       deb.cancel();
     })
-  }, [deb, id, isSmol, pages])
+  }, [bar, deb, id, isSmol, pages])
 
   useEffect(() => {
     if (progress) setPage(Math.floor(progress * pages))
@@ -132,5 +147,14 @@ export default function Read() {
       <Page pageIndex={pageNum} noData='' width={width} height={height} />
       {!isSmol && <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />}
     </Document>
+    <Slide appear={true} direction='up' in={bar}>
+      <AppBar position='fixed' sx={{ bottom: 0, top: 'auto' }}>
+        <Toolbar>
+          <IconButton color='inherit' onClick={router.back}>
+            <ArrowBack />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+    </Slide>
   </>
 }

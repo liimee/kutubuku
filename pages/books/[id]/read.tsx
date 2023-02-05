@@ -95,29 +95,31 @@ export default function Read() {
 
   useEffect(() => {
     function click(e: MouseEvent) {
-      if (e.clientY > window.innerHeight * 0.64) {
-        setBar(b => !b);
-      } else {
-        setBar(b => {
-          if (b) {
-            return false
-          } else {
-            const add = isSmol ? 1 : 2;
+      if (!drawer) {
+        if (e.clientY > window.innerHeight * 0.64) {
+          setBar(b => !b);
+        } else {
+          setBar(b => {
+            if (b) {
+              return false
+            } else {
+              const add = isSmol ? 1 : 2;
 
-            setPage(p => {
-              let g = p;
+              setPage(p => {
+                let g = p;
 
-              if (e.clientX >= window.innerWidth / 2) g = p + add
-              else if (p > 0) g = p - add;
+                if (e.clientX >= window.innerWidth / 2) g = p + add
+                else if (p > 0) g = p - add;
 
-              deb(id, g, pages);
+                deb(id, g, pages);
 
-              return g;
-            });
-          }
+                return g;
+              });
+            }
 
-          return b
-        });
+            return b
+          });
+        }
       }
     }
 
@@ -127,7 +129,7 @@ export default function Read() {
       window.removeEventListener('click', click);
       deb.cancel();
     })
-  }, [bar, deb, id, isSmol, pages])
+  }, [bar, deb, id, isSmol, pages, drawer])
 
   useEffect(() => {
     if (progress) setPage(Math.floor(progress * pages))
@@ -179,7 +181,7 @@ export default function Read() {
       </AppBar>
     </Slide>
     <Drawer anchor='right' open={drawer} onClose={() => setDrawer(false)}>
-      <List>
+      <List sx={{ width: 250 }}>
         {toc.map((v, i) => <ListItem key={i}>
           <ListItemButton onClick={() => {
             setPage(v.index);

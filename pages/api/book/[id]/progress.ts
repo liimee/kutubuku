@@ -8,14 +8,32 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
 
   if (session) {
     if (req.method === 'POST') {
+      const exists = await client.progress.findUnique({
+        where: {
+          userId_bookId: {
+            bookId: req.query.id as string,
+            userId: session.user.id as string,
+          }
+        }
+      })
+
+      if (exists) {
+        if (new Date(exists.lastUpdated) > new Date(req.body.now)) {
+          res.send('db is newer :)');
+          return;
+        }
+      }
+
       await client.progress.upsert({
         create: {
           bookId: req.query.id as string,
           userId: session.user.id as string,
-          progress: parseFloat(req.body) || 0
+          progress: req.body.progress || 0,
+          lastUpdated: req.body.now
         },
         update: {
-          progress: parseFloat(req.body) || 0
+          progress: req.body.progress || 0,
+          lastUpdated: req.body.now
         },
         where: {
           userId_bookId: {
@@ -33,7 +51,8 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
           bookId: req.query.id as string
         },
         select: {
-          progress: true
+          progress: true,
+          lastUpdated: true,
         }
       }))
     }

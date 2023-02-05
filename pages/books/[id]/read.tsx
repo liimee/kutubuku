@@ -70,6 +70,20 @@ export default function Read() {
 
       if (e.clientX >= window.innerWidth / 2) setPage(pageNum + add);
       else if (pageNum > 0) setPage(pageNum - add);
+
+      debounce(() => {
+        fetch('/api/book/' + id + '/progress', {
+          body: JSON.stringify({
+            progress: (pageNum / pages),
+            now: new Date().toISOString()
+          }),
+          method: 'POST'
+        }).then(() => window.workbox.messageSW({
+          do: 'download',
+          things: [`/api/book/${id}/progress`],
+          name: 'apis'
+        })).catch(() => { })
+      }, 2000)();
     }
 
     window.addEventListener('click', click);
@@ -78,19 +92,6 @@ export default function Read() {
       window.removeEventListener('click', click);
     })
   }, [id, pageNum, pages, progress, isSmol])
-
-  const throttled = useRef(debounce((page: number, id: string, pages: number) => {
-    fetch('/api/book/' + id + '/progress', {
-      body: (page / pages).toString(),
-      method: 'POST'
-    }).then(() => window.workbox.messageSW({
-      do: 'download',
-      things: [`/api/book/${id}/progress`],
-      name: 'apis'
-    })).catch(() => { })
-  }, 2000))
-
-  useEffect(() => throttled.current(pageNum, id as string, pages), [pageNum, pages, id])
 
   useEffect(() => {
     if (progress) setPage(Math.floor(progress * pages))

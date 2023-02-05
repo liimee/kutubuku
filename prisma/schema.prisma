@@ -8,27 +8,29 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid()) @unique
+  id           String     @id @unique @default(uuid())
   username     String
   password     String
   bookProgress Progress[]
 }
 
 model Book {
-  path         String         @unique
+  path         String     @unique
   title        String
   author       String
   desc         String?
-  id           String         @id @default(cuid())
+  id           String     @id @default(cuid())
   BookProgress Progress[]
 }
 
 model Progress {
-  bookId   String
-  userId   String
-  progress Float
-  id       Int    @id @default(autoincrement())
-  user     User   @relation(fields: [userId], references: [id])
-  book     Book   @relation(fields: [bookId], references: [id])
+  bookId      String
+  userId      String
+  progress    Float
+  lastUpdated DateTime @default(now()) @updatedAt
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  book        Book     @relation(fields: [bookId], references: [id])
+
   @@unique([userId, bookId])
 }

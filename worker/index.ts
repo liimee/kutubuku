@@ -61,40 +61,59 @@ const bgSync = new Queue('progressQueue', {
 registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
   cacheName: 'bookInfo'
 }), 'GET');
-registerRoute(/\/api\/book\/\w+\/progress?\/?$/, (e) => {
-  return new Promise((resolve) => {
-    bgSync.replayRequests().finally(() => {
-      new NetworkOnly().handle(e).then(resolve, () => {
-        function sendCache() {
-          caches.match(e.request).then(v => {
-            if (v) resolve(v);
-            else resolve(new Response(JSON.stringify({
-              progress: 0
-            })))
-          })
-        }
+registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
+  function respond(thing: any, from: string) {
+    console.log('Returning progress from ' + from);
+    return new Response(JSON.stringify(thing));
+  }
 
-        try {
-          bgSync.getAll().then(v => {
-            if (v.length > 0) {
-              const latest = v.reduce((max, obj) => {
-                return obj.timestamp! > max.timestamp! ? obj : max;
-              })
+  const blankResponse = {
+    progress: 0,
+    lastUpdated: new Date(1).toISOString()
+  };
 
-              latest.request.text().then(text =>
-                resolve(new Response(JSON.stringify({
-                  progress: parseFloat(text)
-                }))))
-            } else {
-              sendCache();
-            }
-          })
-        } catch (_) {
-          sendCache();
-        }
-      })
-    });
-  });
+  const cache = await (await caches.match(e.request))?.json() || blankResponse;
+
+  const net = await (async () => {
+    try {
+      return await (await new NetworkOnly().handle(e))?.json();
+    } catch (_) {
+      return blankResponse;
+    }
+  })()
+
+  const all = await bgSync.getAll();
+  const bg = all.length > 0 ? await (async () => {
+    const latest = all.reduce((max, obj) => {
+      return obj.timestamp! > max.timestamp! ? obj : max;
+    })
+
+    const text = await latest.request.json()
+    return {
+      progress: text.progress,
+      lastUpdated: new Date(text.now).toISOString()
+    }
+  })() : blankResponse;
+
+  if (bg.lastUpdated > net.lastUpdated) {
+    bgSync.registerSync();
+    return respond(bg, 'bg');
+  } else {
+    if (cache.lastUpdated > bg.lastUpdated) {
+      const all = await bgSync.getAll();
+      for (let { } of all) {
+        await bgSync.popRequest();
+      }
+
+      if (net.lastUpdated > cache.lastUpdated) {
+        return respond(net, 'net');
+      } else {
+        return respond(cache, 'cache');
+      }
+    } else {
+      return respond(net, 'net');
+    }
+  }
 }, 'GET')
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (req) => {
   bgSync.pushRequest(req)

@@ -13,7 +13,7 @@ export default function scan() {
 
   const gBookApi = new GoogleBooksAPI();
 
-  const thumbnailPath = path.join('./', 'public', 'thumbnails')
+  const thumbnailPath = path.join('./', 'thumbnails')
 
   if (!existsSync(thumbnailPath)) {
     mkdirSync(thumbnailPath);

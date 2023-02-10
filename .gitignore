@@ -39,7 +39,7 @@ next-env.d.ts
 /prisma/migrations
 
 /books.txt
-/public/thumbnails
+/thumbnails
 
 /public/pdf.worker.min.js
 /public/sw.js*

@@ -1,5 +1,5 @@
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
+import { NetworkFirst, CacheFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategies';
 import { Queue, QueueStore } from 'workbox-background-sync';
 
 declare let self: ServiceWorkerGlobalScope
@@ -54,11 +54,21 @@ self.addEventListener('message', event => {
   }
 });
 
+async function deleteUrlFromCache(url: string) {
+  try {
+    const queue = new QueueStore('progressQueue');
+    const actualQueue = await queue.getAll();
+    for (let v of actualQueue.filter(v => v.requestData.url === url)) {
+      await queue.deleteEntry(v.id)
+    }
+  } catch (_) { }
+}
+
 const bgSync = new Queue('progressQueue', {
   maxRetentionTime: 24 * 60
 })
 
-registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
+registerRoute(/\/api\/book\/\w+\/?$/, new StaleWhileRevalidate({
   cacheName: 'bookInfo'
 }), 'GET');
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
@@ -100,10 +110,7 @@ registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
     return respond(bg, 'bg');
   } else {
     if (cache.lastUpdated > bg.lastUpdated) {
-      const all = await bgSync.getAll();
-      for (let { } of all) {
-        await bgSync.popRequest();
-      }
+      deleteUrlFromCache(e.request.url);
 
       if (net.lastUpdated > cache.lastUpdated) {
         return respond(net, 'net');
@@ -119,13 +126,7 @@ registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (req) => {
   try {
     const res = await new NetworkOnly().handle(req);
 
-    try {
-      const queue = new QueueStore('progressQueue');
-      const actualQueue = await queue.getAll();
-      for (let v of actualQueue.filter(v => v.requestData.url === req.request.url)) {
-        await queue.deleteEntry(v.id)
-      }
-    } catch (_) { }
+    deleteUrlFromCache(req.request.url);
 
     console.log('sent through net')
 

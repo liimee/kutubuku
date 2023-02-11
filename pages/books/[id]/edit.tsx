@@ -22,7 +22,7 @@ export default function EditBook() {
 
   return <>
     <Head>
-      <title>Edit {title || 'book'}</title>
+      <title>{`Edit ${title || 'book'}`}</title>
     </Head>
 
     <Container maxWidth='sm' sx={{ p: 3 }}>

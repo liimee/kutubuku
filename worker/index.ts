@@ -1,5 +1,5 @@
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategies';
+import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
 import { Queue, QueueStore } from 'workbox-background-sync';
 
 declare let self: ServiceWorkerGlobalScope
@@ -50,7 +50,7 @@ self.addEventListener('message', event => {
           returnKeys(event, cache)
         })
       })
-    } else if(data.do === 'deleteInfo') {
+    } else if (data.do === 'deleteInfo') {
       caches.open('bookInfo').then(cache => {
         cache.delete(`/api/book/${data.thing}`).then(() => {
           event.ports[0].postMessage('ok')
@@ -74,7 +74,7 @@ const bgSync = new Queue('progressQueue', {
   maxRetentionTime: 24 * 60
 })
 
-registerRoute(/\/api\/book\/\w+\/?$/, new StaleWhileRevalidate({
+registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
   cacheName: 'bookInfo'
 }), 'GET');
 registerRoute(/\/api\/book\/\w+\/?$/, new NetworkOnly(), 'POST');

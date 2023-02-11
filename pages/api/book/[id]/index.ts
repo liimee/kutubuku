@@ -30,6 +30,14 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
       res.json(await client.book.findUnique({
         where: {
           id: req.query.id as string
+        },
+        include: {
+          BookProgress: {
+            where: {
+              userId: session.user.id
+            },
+            take: 1
+          }
         }
       }))
     }

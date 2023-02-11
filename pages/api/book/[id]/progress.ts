@@ -30,11 +30,11 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
           bookId: req.query.id as string,
           userId: session.user.id as string,
           progress: req.body.progress || 0,
-          lastUpdated: req.body.now
+          lastUpdated: req.body.now || new Date().toISOString()
         },
         update: {
           progress: req.body.progress || 0,
-          lastUpdated: req.body.now
+          lastUpdated: req.body.now || new Date().toISOString()
         },
         where: {
           userId_bookId: {
@@ -45,6 +45,19 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
       }).catch(console.log)
 
       res.send('ok?')
+    } else if (req.method === 'DELETE') {
+      try {
+        await client.progress.delete({
+          where: {
+            userId_bookId: {
+              bookId: req.query.id as string,
+              userId: session.user.id as string
+            }
+          }
+        })
+
+        res.send('ok')
+      } catch (_) { res.status(500).send(':(') }
     } else {
       res.json(await client.progress.findFirst({
         where: {

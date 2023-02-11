@@ -5,11 +5,13 @@ import { Container } from "@mui/system";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import DownloadDoneIcon from '@mui/icons-material/DownloadDone';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import Edit from "@mui/icons-material/Edit";
+import Add from "@mui/icons-material/Add";
+import Remove from "@mui/icons-material/Remove";
 
 export default function Book() {
   const router = useRouter();
@@ -23,9 +25,14 @@ export default function Book() {
   const [snack, sSnack] = useState(false);
   const [msg, setMsg] = useState('');
 
+  const [progDisabled, setProgDisabled] = useState(false);
+  const [progConfirm, setProgConfirm] = useState(false);
+
+  const fetchBook = useCallback(() => fetch('/api/book/' + encodeURIComponent(id as string)).then((res) => res.json()).then(setBook), [id]);
+
   useEffect(() => {
     if (id) {
-      fetch('/api/book/' + encodeURIComponent(id as string)).then((res) => res.json()).then(setBook);
+      fetchBook()
 
       window.workbox.messageSW({
         do: 'getDownloaded'
@@ -33,7 +40,7 @@ export default function Book() {
         setDown(v.includes(id as string))
       })
     }
-  }, [id]);
+  }, [id, fetchBook]);
 
   function downloadOrDelete() {
     if (downloaded) {
@@ -89,6 +96,16 @@ export default function Book() {
                   <IconButton onClick={downloadOrDelete} color='primary' disabled={isDownloading}>{isDownloading ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
                 </Tooltip>
               </Box>
+              {book.BookProgress.length > 0 ? <Button fullWidth variant='text' disabled={progDisabled} color='error' startIcon={<Remove />} onClick={() => {
+                setProgDisabled(true);
+                setProgConfirm(true);
+              }}>Remove from My books</Button> : <Button fullWidth variant='text' disabled={progDisabled} startIcon={<Add />} onClick={() => {
+                setProgDisabled(true);
+
+                fetch('/api/book/' + router.query.id + '/progress', {
+                  method: 'POST'
+                }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
+              }}>Add to My books</Button>}
             </div>
             <div>
               <Head>
@@ -132,6 +149,41 @@ export default function Book() {
           {msg}
         </Alert>
       </Snackbar>
+
+      <ConfirmRemove open={progConfirm} onClose={() => {
+        setProgDisabled(false);
+        setProgConfirm(false);
+      }} actuallyDo={() => {
+        setProgConfirm(false)
+
+        fetch('/api/book/' + router.query.id + '/progress', {
+          method: 'DELETE'
+        }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
+      }} />
     </>
   )
+}
+
+function ConfirmRemove({ open, onClose, actuallyDo }: { open: boolean, onClose: (event?: {}, reason?: "backdropClick" | "escapeKeyDown") => void, actuallyDo: () => void }) {
+  return <Dialog
+    open={open}
+    onClose={onClose}
+    aria-labelledby="remove-title"
+    aria-describedby="remove-description"
+  >
+    <DialogTitle id="remove-title">
+      Remove this book from <i>My Books</i> and delete reading progress?
+    </DialogTitle>
+    <DialogContent>
+      <DialogContentText id="remove-description">
+        {"This action will delete your reading progress for this book. Keep in mind that when you read the book (through the 'Read' button), the book will be added to My Books automatically."}
+      </DialogContentText>
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={onClose} autoFocus>Cancel</Button>
+      <Button onClick={actuallyDo} color='error'>
+        Remove
+      </Button>
+    </DialogActions>
+  </Dialog>
 }

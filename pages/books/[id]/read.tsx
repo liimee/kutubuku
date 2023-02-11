@@ -161,7 +161,7 @@ export default function Read() {
       v.getOutline().then(outlines => {
         const res: { index: number; title: string; }[] = [];
 
-        outlines.forEach(outline => {
+        outlines?.forEach(outline => {
           v.getPageIndex(outline.dest![0]).then(index => res.push({
             index,
             title: outline.title
@@ -181,7 +181,7 @@ export default function Read() {
             <ArrowBack />
           </IconButton>
           <div style={{ flexGrow: 1 }} />
-          <IconButton color='inherit' onClick={() => setDrawer(true)}>
+          <IconButton color='inherit' disabled={toc.length < 1} onClick={() => setDrawer(true)}>
             <ListIcon />
           </IconButton>
         </Toolbar>

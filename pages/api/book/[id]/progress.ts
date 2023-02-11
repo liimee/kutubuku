@@ -54,6 +54,11 @@ export default async function updateProgress(req: NextApiRequest, res: NextApiRe
         select: {
           progress: true,
           lastUpdated: true,
+          book: {
+            select: {
+              title: true
+            }
+          }
         }
       }))
     }

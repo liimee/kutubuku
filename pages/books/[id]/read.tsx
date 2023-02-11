@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ListIcon from '@mui/icons-material/List';
+import Head from 'next/head';
 
 export default function Read() {
   const router = useRouter()
@@ -15,6 +16,7 @@ export default function Read() {
   const isSmol = useMediaQuery('(max-width: 500px)');
 
   const [progress, setProgress] = useState(0);
+  const [title, setTitle] = useState('');
   const [width, setWidth] = useState<number | undefined>(100);
   const [height, setHeight] = useState<number | undefined>(100);
 
@@ -35,6 +37,7 @@ export default function Read() {
   useEffect(() => {
     if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => {
       console.log(v)
+      setTitle(v.book.title);
       setProgress(v.progress)
       window.workbox.messageSW({
         do: 'download',
@@ -146,6 +149,10 @@ export default function Read() {
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
   return <>
+    <Head>
+      <title>{title || 'Loading book...'}</title>
+    </Head>
+
     {/* @ts-ignore */}
     <Document inputRef={pdf} onLoadSuccess={(v) => {
       /* @ts-ignore */

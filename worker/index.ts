@@ -117,7 +117,7 @@ registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
     return respond(bg, 'bg');
   } else {
     if (cache.lastUpdated > bg.lastUpdated) {
-      deleteUrlFromCache(e.request.url);
+      await deleteUrlFromCache(e.request.url);
 
       if (net.lastUpdated > cache.lastUpdated) {
         return respond(net, 'net');
@@ -131,9 +131,9 @@ registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
 }, 'GET')
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (req) => {
   try {
-    const res = await new NetworkOnly().handle(req);
+    const res = await new NetworkOnly().handle({ request: req.request.clone(), event: req.event });
 
-    deleteUrlFromCache(req.request.url);
+    deleteUrlFromCache(res.url);
 
     console.log('sent through net')
 

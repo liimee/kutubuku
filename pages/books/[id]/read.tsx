@@ -37,7 +37,7 @@ export default function Read() {
   useEffect(() => {
     if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => {
       console.log(v)
-      setTitle(v.book.title);
+      setTitle(v.book?.title || 'Book');
       setProgress(v.progress)
       window.workbox.messageSW({
         do: 'download',

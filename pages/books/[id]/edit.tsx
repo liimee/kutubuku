@@ -1,10 +1,12 @@
 import { Box, Button, Container, LinearProgress, Snackbar, TextField } from "@mui/material";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 export default function EditBook() {
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
   const [desc, setDesc] = useState('');
   const [snackbar, setSnack] = useState(false);
   const router = useRouter();
@@ -12,12 +14,17 @@ export default function EditBook() {
   useEffect(() => {
     if (router.query.id) fetch('/api/book/' + router.query.id).then(v => v.json()).then(v => {
       setTitle(v.title);
+      setAuthor(v.author);
       setDesc(v.desc);
       setLoading(false);
     })
   }, [router.query.id])
 
   return <>
+    <Head>
+      <title>Edit {title || 'book'}</title>
+    </Head>
+
     <Container maxWidth='sm' sx={{ p: 3 }}>
       {loading && <LinearProgress />}
       <Box component='form' sx={{
@@ -34,7 +41,8 @@ export default function EditBook() {
             }),
             body: JSON.stringify({
               title,
-              desc
+              desc,
+              author
             })
           }).then(() => {
             window.workbox.messageSW({
@@ -47,6 +55,7 @@ export default function EditBook() {
         }
       }}>
         <TextField fullWidth disabled={loading} required value={title} onChange={e => setTitle(e.target.value)} label='Title' variant="outlined" />
+        <TextField fullWidth disabled={loading} required value={author} onChange={e => setAuthor(e.target.value)} label='Author' variant="outlined" />
         <TextField fullWidth disabled={loading} value={desc} onChange={e => setDesc(e.target.value)} label='Description' multiline minRows={2} maxRows={6} variant="outlined" />
 
         <Box sx={{ textAlign: 'end' }}>

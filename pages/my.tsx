@@ -11,31 +11,33 @@ export default function MyBooks() {
     fetch('/api/my').then(v => v.json()).then((v: Progress[]) => setBooks(v.map(v => {
       // @ts-ignore
       v.id = v.bookId;
+      // @ts-ignore
+      v.title = v.book.title;
 
       return v;
     })));
   }, [])
 
   useEffect(() => {
-    window.navigator.serviceWorker.controller?.postMessage({
+    window.navigator.serviceWorker?.controller?.postMessage({
       do: 'download',
       things: books?.map(v => '/api/book/' + v.bookId),
       name: 'bookInfo'
     })
 
-    window.navigator.serviceWorker.controller?.postMessage({
+    window.navigator.serviceWorker?.controller?.postMessage({
       do: 'download',
       things: books?.map(v => '/books/' + v.bookId),
       name: 'bookPages'
     })
 
-    window.navigator.serviceWorker.controller?.postMessage({
+    window.navigator.serviceWorker?.controller?.postMessage({
       do: 'download',
       things: books?.map(v => '/books/' + v.bookId + '/read/'),
       name: 'bookPages'
     })
 
-    window.navigator.serviceWorker.controller?.postMessage({
+    window.navigator.serviceWorker?.controller?.postMessage({
       do: 'download',
       things: ['/api/my'],
       name: 'apis'

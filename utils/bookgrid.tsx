@@ -7,7 +7,8 @@ export default function BookGrid({ list }: { list: Book[] | null }) {
   return (
     <Grid container spacing={2} justifyContent='space-evenly'>
       {
-        list ? list.map((v: {
+        // @ts-ignore
+        list ? list.sort((a, b) => a.title?.localeCompare(b.title)).map((v: {
           title: string; id: string
         }) =>
           <Grid item key={v.id}>

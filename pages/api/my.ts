@@ -8,11 +8,17 @@ export default async function allBooks(req: NextApiRequest, res: NextApiResponse
 
   if (session) {
     res.json(await client.progress.findMany({
-        where: {
-          userId: session.user.id
+      where: {
+        userId: session.user.id
+      },
+      include: {
+        book: {
+          select: {
+            title: true
+          }
         }
-      })
-    )
+      }
+    }))
   } else {
     res.status(401).send('Unauthorized :)');
   }

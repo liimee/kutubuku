@@ -34,7 +34,7 @@ export default function Book() {
     if (id) {
       fetchBook()
 
-      window.workbox.messageSW({
+      window.workbox?.messageSW({
         do: 'getDownloaded'
       }).then((v: string[]) => {
         setDown(v.includes(id as string))
@@ -48,7 +48,7 @@ export default function Book() {
     } else {
       downloading(true);
 
-      window.workbox.messageSW({
+      window.workbox?.messageSW({
         do: 'downloadIfNotExist',
         thing: `/api/book/${id}/file`,
         name: 'books'
@@ -62,7 +62,7 @@ export default function Book() {
   }
 
   function actuallyDelete() {
-    window.workbox.messageSW({
+    window.workbox?.messageSW({
       do: 'deleteBook',
       thing: id
     }).then((v: string[]) => {

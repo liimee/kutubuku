@@ -50,6 +50,12 @@ self.addEventListener('message', event => {
           returnKeys(event, cache)
         })
       })
+    } else if(data.do === 'deleteInfo') {
+      caches.open('bookInfo').then(cache => {
+        cache.delete(`/api/book/${data.thing}`).then(() => {
+          event.ports[0].postMessage('ok')
+        })
+      })
     }
   }
 });
@@ -71,6 +77,7 @@ const bgSync = new Queue('progressQueue', {
 registerRoute(/\/api\/book\/\w+\/?$/, new StaleWhileRevalidate({
   cacheName: 'bookInfo'
 }), 'GET');
+registerRoute(/\/api\/book\/\w+\/?$/, new NetworkOnly(), 'POST');
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
   function respond(thing: any, from: string) {
     console.log('Returning progress from ' + from);

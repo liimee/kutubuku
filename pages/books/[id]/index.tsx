@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import DownloadDoneIcon from '@mui/icons-material/DownloadDone';
 import DownloadingIcon from '@mui/icons-material/Downloading';
+import Edit from "@mui/icons-material/Edit";
 
 export default function Book() {
   const router = useRouter();
@@ -93,7 +94,10 @@ export default function Book() {
               <Head>
                 <title>{book.title}</title>
               </Head>
-              <Typography variant='h4' component='h1' lineHeight={1.1}>{book.title}</Typography>
+              <Box display='flex'>
+                <Typography sx={{ flexGrow: 1 }} variant='h4' component='h1' lineHeight={1.1}>{book.title}</Typography>
+                <Box m='auto'><IconButton href={`/books/${id}/edit`} LinkComponent={Link}><Edit /></IconButton></Box>
+              </Box>
               <Typography fontStyle='italic' color='GrayText'>{book.author}</Typography>
               <Typography textAlign='justify'>{book.desc}</Typography>
             </div>

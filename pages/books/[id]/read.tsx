@@ -97,6 +97,21 @@ export default function Read() {
   })).current;
 
   useEffect(() => {
+    function actuallyClick(e: MouseEvent) {
+      const add = isSmol ? 1 : 2;
+
+      setPage(p => {
+        let g = p;
+
+        if (e.clientX >= window.innerWidth / 2) g = p + add
+        else if (p > 0) g = p - add;
+
+        deb(id, g, pages);
+
+        return g;
+      });
+    }
+
     function click(e: MouseEvent) {
       if (!drawer) {
         if (e.clientY > window.innerHeight * 0.64) {
@@ -106,18 +121,7 @@ export default function Read() {
             if (b) {
               return false
             } else {
-              const add = isSmol ? 1 : 2;
-
-              setPage(p => {
-                let g = p;
-
-                if (e.clientX >= window.innerWidth / 2) g = p + add
-                else if (p > 0) g = p - add;
-
-                deb(id, g, pages);
-
-                return g;
-              });
+              actuallyClick(e);
             }
 
             return b
@@ -126,10 +130,28 @@ export default function Read() {
       }
     }
 
+    function keyboard(e: KeyboardEvent) {
+      if (e.key === 'ArrowRight') {
+        actuallyClick(new MouseEvent('mousedown', {
+          clientX: window.innerWidth
+        }));
+      } else if (e.key === 'ArrowLeft') {
+        actuallyClick(new MouseEvent('mousedown', {
+          clientX: 0
+        }));
+      } else if (e.key === 'Escape' && bar) {
+        setBar(false);
+      } else if (e.key === ' ') {
+        setBar(b => !b);
+      }
+    }
+
+    window.addEventListener('keydown', keyboard);
     window.addEventListener('click', click);
 
     return (() => {
       window.removeEventListener('click', click);
+      window.removeEventListener('keydown', keyboard);
       deb.cancel();
     })
   }, [bar, deb, id, isSmol, pages, drawer])

@@ -15,6 +15,7 @@ type TocContent = {
 };
 
 type ReaderProps = {
+  file: ArrayBuffer,
   progress: number,
   setBar: Dispatch<SetStateAction<boolean>>,
   deb: (id: any, pageNum: any, pages: any) => void,
@@ -36,6 +37,14 @@ export default function Read() {
   const [toc, setToc] = useState<TocContent[]>([]);
   const [drawer, setDrawer] = useState(false);
   const onTocClick = useRef<((v: TocContent) => void) | null>(null);
+
+  const [file, setFile] = useState<ArrayBuffer | null>(null);
+
+  useEffect(() => {
+    if (id) {
+      fetch(`/api/book/${id}/file`).then(res => res.arrayBuffer()).then(setFile);
+    }
+  }, [id])
 
   useEffect(() => {
     if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => {
@@ -83,7 +92,9 @@ export default function Read() {
       <title>{title || 'Loading book...'}</title>
     </Head>
 
-    <PdfViewer progress={progress} setBar={setBar} deb={deb} drawer={drawer} bar={bar} id={id as string} setToc={setToc} setTocClick={(v: any) => { onTocClick.current = v }} />
+    {file ?
+      <PdfViewer file={file} progress={progress} setBar={setBar} deb={deb} drawer={drawer} bar={bar} id={id as string} setToc={setToc} setTocClick={(v: any) => { onTocClick.current = v }} />
+      : <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
 
     <Slide appear={true} direction='up' in={bar}>
       <AppBar position='fixed' sx={{ bottom: 0, top: 'auto' }}>
@@ -114,7 +125,7 @@ export default function Read() {
   </>
 }
 
-function PdfViewer({ progress, setBar, deb, drawer, bar, id, setToc, setTocClick }: ReaderProps) {
+function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTocClick }: ReaderProps) {
   var pdf = useRef<HTMLDivElement>();
   const isSmol = useMediaQuery('(max-width: 500px)');
   const [width, setWidth] = useState<number | undefined>(100);
@@ -246,7 +257,7 @@ function PdfViewer({ progress, setBar, deb, drawer, bar, id, setToc, setTocClick
 
       setToc(res);
     });
-  }} loading={<CircularProgress />} file={`/api/book/${id}/file`}>
+  }} loading={<CircularProgress />} file={file}>
     <Page pageIndex={pageNum} noData='' width={width} height={height} />
     {!isSmol && <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />}
   </Document>

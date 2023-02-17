@@ -3,10 +3,32 @@ import glob from 'glob';
 import { GoogleBooksAPI } from "google-books-js";
 import path from "path";
 import client from './prisma';
+import epub from 'epub2';
 
 // @types/pdfinfo does not exist?
 // @ts-ignore
 import pdfinfo from 'pdfinfo';
+import type { SearchResult } from "google-books-js/dist/interfaces/search";
+
+function addToDb(res: SearchResult, v: string, thumbnailPath: string) {
+  if (res.kind == 'books#volumes' && res.totalItems > 0) {
+    const item = res.items[0].volumeInfo;
+
+    client.book.create({
+      data: {
+        path: v,
+        title: item.title,
+        desc: item.description,
+        author: item.authors?.join(', ') || '',
+        id: res.items[0].id
+      }
+    }).then((dbres) => {
+      console.log(dbres);
+
+      fetch(item.imageLinks.thumbnail).then(v => v.arrayBuffer()).then(v => writeFileSync(path.join(thumbnailPath, res.items[0].id + '.jpg'), Buffer.from(v)))
+    })
+  }
+}
 
 export default function scan() {
   const books = readFileSync(path.join('./', 'books.txt'), 'utf8').split('\n');
@@ -40,30 +62,35 @@ export default function scan() {
                     title: meta.title || path.parse(v).name,
                     author: meta.author
                   }
-                }).then(res => {
-                  if (res.kind == 'books#volumes' && res.totalItems > 0) {
-                    const item = res.items[0].volumeInfo;
-
-                    client.book.create({
-                      data: {
-                        path: v,
-                        title: item.title,
-                        desc: item.description,
-                        author: item.authors.join(', '),
-                        id: res.items[0].id
-                      }
-                    }).then((dbres) => {
-                      console.log(dbres);
-
-                      fetch(item.imageLinks.thumbnail).then(v => v.arrayBuffer()).then(v => writeFileSync(path.join(thumbnailPath, res.items[0].id + '.jpg'), Buffer.from(v)))
-                    })
-                  }
-                })
+                }).then(res => addToDb(res, v, thumbnailPath))
               }
             })
           }
         })
       })
     })
+
+    glob(path.join(v, '*.epub'), {}, (_, files) => {
+      console.log(files)
+
+      files.forEach(v => {
+        client.book.findUnique({
+          where: {
+            path: v
+          }
+        }).then(uniq => {
+          if (!uniq) {
+            epub.createAsync(v).then((ep: epub) => {
+              gBookApi.search({
+                filters: {
+                  title: ep.metadata.title || path.parse(v).name,
+                  author: ep.metadata.creator
+                }
+              }).then(res => addToDb(res, v, thumbnailPath));
+            });
+          }
+        });
+      });
+    });
   })
 }

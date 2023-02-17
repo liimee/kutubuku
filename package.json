@@ -23,6 +23,7 @@
     "@types/react-dom": "18.0.10",
     "@types/react-pdf": "^6.2.0",
     "copy-webpack-plugin": "^11.0.0",
+    "epub2": "^3.0.1",
     "eslint": "8.32.0",
     "eslint-config-next": "13.1.4",
     "glob": "^8.1.0",

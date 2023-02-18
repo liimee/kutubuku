@@ -84,17 +84,24 @@ export default function scan() {
               const { title, creator, description, cover } = ep.metadata;
 
               if (title && creator) {
-                client.book.create({
-                  data: {
-                    title,
-                    desc: description?.replace(/(<([^>]+)>)/gi, ""),
-                    author: creator,
-                    path: v
+                gBookApi.search({
+                  filters: {
+                    title: title || path.parse(v).name,
+                    author: creator
                   }
-                }).then(v => {
-                  ep.getImageAsync(cover).then((img: [Buffer, string]) => {
-                    writeFileSync(path.join(thumbnailPath, v.id + '.jpg'), img[0])
-                  });
+                }).then(res => {
+                  client.book.create({
+                    data: {
+                      title,
+                      desc: description?.replace(/(<([^>]+)>)/gi, "") || res.items[0]?.volumeInfo.description,
+                      author: creator,
+                      path: v
+                    }
+                  }).then(v => {
+                    ep.getImageAsync(cover).then((img: [Buffer, string]) => {
+                      writeFileSync(path.join(thumbnailPath, v.id + '.jpg'), img[0])
+                    });
+                  })
                 })
               }
             });

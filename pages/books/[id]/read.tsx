@@ -64,9 +64,7 @@ export default function Read() {
     });
   }, [id])
 
-  const deb = useRef(debounce((id, progress) => {
-    setProgress(progress)
-
+  const debs = useRef(debounce((id, progress) => {
     fetch('/api/book/' + id + '/progress', {
       body: JSON.stringify({
         progress,
@@ -86,6 +84,11 @@ export default function Read() {
     leading: true
   })).current;
 
+  const deb = useCallback((id: string, progress: number) => {
+    setProgress(progress);
+    debs(id, progress);
+  }, [debs])
+
   useEffect(() => {
     if (id) window.workbox.messageSW({
       do: 'downloadIfNotExist',
@@ -93,6 +96,10 @@ export default function Read() {
       name: 'books'
     })
   }, [id])
+
+  useEffect(() => {
+    return () => debs.cancel()
+  }, [debs])
 
   return <>
     <Head>
@@ -208,9 +215,6 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
     return (() => {
       window.removeEventListener('click', click);
       window.removeEventListener('keydown', keyboard);
-
-      // @ts-ignore
-      deb.cancel();
     })
   }, [bar, deb, id, isSmol, pages, drawer, setBar])
 

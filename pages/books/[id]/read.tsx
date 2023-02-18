@@ -3,11 +3,12 @@ import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ListIcon from '@mui/icons-material/List';
 import Head from 'next/head';
+import Epub, { Book, Rendition } from 'epubjs';
 
 type TocContent = {
   index: number,
@@ -39,10 +40,14 @@ export default function Read() {
   const onTocClick = useRef<((v: TocContent) => void) | null>(null);
 
   const [file, setFile] = useState<ArrayBuffer | null>(null);
+  const [filetype, setFtype] = useState('application/pdf');
 
   useEffect(() => {
     if (id) {
-      fetch(`/api/book/${id}/file`).then(res => res.arrayBuffer()).then(setFile);
+      fetch(`/api/book/${id}/file`).then(res => {
+        setFtype(res.headers.get('Content-Type') || 'application/pdf');
+        return res.arrayBuffer()
+      }).then(setFile);
     }
   }, [id])
 
@@ -93,7 +98,8 @@ export default function Read() {
     </Head>
 
     {file ?
-      <PdfViewer file={file} progress={progress} setBar={setBar} deb={deb} drawer={drawer} bar={bar} id={id as string} setToc={setToc} setTocClick={(v: any) => { onTocClick.current = v }} />
+      filetype === 'application/epub+zip' ? <EpubViewer drawer={drawer} setBar={setBar} file={file} /> :
+        <PdfViewer file={file} progress={progress} setBar={setBar} deb={deb} drawer={drawer} bar={bar} id={id as string} setToc={setToc} setTocClick={(v: any) => { onTocClick.current = v }} />
       : <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
 
     <Slide appear={true} direction='up' in={bar}>
@@ -261,4 +267,67 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
     <Page pageIndex={pageNum} noData='' width={width} height={height} />
     {!isSmol && <Page pageIndex={pageNum + 1} noData='' width={width} height={height} />}
   </Document>
+}
+
+function EpubViewer({ file, setBar, drawer }: ReaderProps) {
+  const div = useRef<HTMLDivElement | null>(null);
+  const book = useRef<Book | null>(null);
+  const [rendition, setRend] = useState<Rendition | null>(null);
+
+  useEffect(() => {
+    let c: Rendition | null;
+
+    if (div.current) {
+      book.current = Epub(file);
+      c = book.current?.renderTo(div.current, {
+        manager: 'default'
+      })
+
+      setRend(c);
+      c.display();
+    }
+
+    return () => {
+      try {
+        c?.destroy();
+        book.current?.destroy();
+      } catch (e) { console.log(e) }
+    }
+  }, [file])
+
+  const actuallyClick = useCallback((e: MouseEvent) => {
+    if (e.clientX > window.innerWidth / 2) {
+      rendition?.next()
+    } else {
+      rendition?.prev()
+    }
+  }, [rendition])
+
+  const click = useCallback((e: MouseEvent) => {
+    if (!drawer) {
+      if (e.clientY > window.top!.innerHeight * 0.64) {
+        setBar(b => !b);
+      } else {
+        setBar(b => {
+          if (b) {
+            return false
+          } else {
+            actuallyClick(e);
+          }
+
+          return b
+        });
+      }
+    }
+  }, [actuallyClick, drawer, setBar])
+
+  useEffect(() => {
+    rendition?.on('click', click);
+
+    return () => {
+      rendition?.off('click', click);
+    }
+  }, [click, rendition])
+
+  return <div ref={div}></div>
 }

@@ -8,7 +8,7 @@ import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ListIcon from '@mui/icons-material/List';
 import Head from 'next/head';
-import Epub, { Book, Rendition } from 'epubjs';
+import Epub, { Book, Location, Rendition } from 'epubjs';
 
 type TocContent = {
   index: number,
@@ -19,7 +19,7 @@ type ReaderProps = {
   file: ArrayBuffer,
   progress: number,
   setBar: Dispatch<SetStateAction<boolean>>,
-  deb: (id: any, pageNum: any, pages: any) => void,
+  deb: (id: string, progress: number) => void,
   drawer: boolean,
   bar: boolean,
   id: string,
@@ -64,10 +64,12 @@ export default function Read() {
     });
   }, [id])
 
-  const deb = useRef(debounce((id, pageNum, pages) => {
+  const deb = useRef(debounce((id, progress) => {
+    setProgress(progress)
+
     fetch('/api/book/' + id + '/progress', {
       body: JSON.stringify({
-        progress: (pageNum / pages),
+        progress,
         now: new Date().toISOString()
       }),
       headers: new Headers({
@@ -98,7 +100,8 @@ export default function Read() {
     </Head>
 
     {file ?
-      filetype === 'application/epub+zip' ? <EpubViewer drawer={drawer} setBar={setBar} file={file} /> :
+      filetype === 'application/epub+zip' ?
+        <EpubViewer drawer={drawer} setBar={setBar} file={file} deb={deb} id={id as string} progress={progress} /> :
         <PdfViewer file={file} progress={progress} setBar={setBar} deb={deb} drawer={drawer} bar={bar} id={id as string} setToc={setToc} setTocClick={(v: any) => { onTocClick.current = v }} />
       : <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
 
@@ -145,7 +148,7 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
   useEffect(() => {
     setTocClick((v: TocContent) => {
       setPage(v.index);
-      deb(id, v.index, pages);
+      deb(id, (v.index / pages));
     })
   })
 
@@ -159,7 +162,7 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
         if (e.clientX >= window.innerWidth / 2) g = p + add
         else if (p > 0) g = p - add;
 
-        deb(id, g, pages);
+        deb(id, (g / pages));
 
         return g;
       });
@@ -269,10 +272,12 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
   </Document>
 }
 
-function EpubViewer({ file, setBar, drawer }: ReaderProps) {
+function EpubViewer({ file, setBar, drawer, deb, id, progress }: ReaderProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const book = useRef<Book | null>(null);
   const [rendition, setRend] = useState<Rendition | null>(null);
+  const [ready, setReady] = useState(false);
+  const [iReady, setiRed] = useState(false);
 
   useEffect(() => {
     let c: Rendition | null;
@@ -284,7 +289,7 @@ function EpubViewer({ file, setBar, drawer }: ReaderProps) {
       })
 
       setRend(c);
-      c.display();
+      c?.display().then(() => book.current?.locations.generate(1024).finally(() => setiRed(true)));
     }
 
     return () => {
@@ -295,8 +300,17 @@ function EpubViewer({ file, setBar, drawer }: ReaderProps) {
     }
   }, [file])
 
+  useEffect(() => {
+    if (iReady) {
+      setReady(false);
+
+      rendition?.display(book.current?.locations.cfiFromPercentage(progress)).then(() => setReady(true))
+    }
+  }, [progress, rendition, iReady])
+
   const actuallyClick = useCallback((e: MouseEvent) => {
-    if (e.clientX > window.innerWidth / 2) {
+    // @ts-ignore
+    if (e.clientX - rendition?.manager.container.scrollLeft > window.top!.innerWidth / 2) {
       rendition?.next()
     } else {
       rendition?.prev()
@@ -329,5 +343,24 @@ function EpubViewer({ file, setBar, drawer }: ReaderProps) {
     }
   }, [click, rendition])
 
-  return <div ref={div}></div>
+  useEffect(() => {
+    function onRelocated(loc: Location) {
+      deb(id, loc.start.percentage)
+    }
+
+    if (rendition?.book)
+      rendition?.on('relocated', onRelocated);
+
+    return () => {
+      rendition?.off('relocated', onRelocated);
+    }
+  }, [rendition, id, deb])
+
+  return <>
+    <div style={{
+      display: !ready ? 'none' : 'block'
+    }} ref={div}>
+    </div>
+    {!ready && <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
+  </>
 }

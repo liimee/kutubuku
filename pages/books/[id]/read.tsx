@@ -11,7 +11,7 @@ import Head from 'next/head';
 import Epub, { Book, Location, Rendition } from 'epubjs';
 
 type TocContent = {
-  index: number,
+  index: number | string,
   title: string
 };
 
@@ -145,7 +145,7 @@ export default function Read() {
 
             setDrawer(false);
           }}>
-            <ListItemText primary={v.title} secondary={v.index + 1} />
+            <ListItemText primary={v.title} secondary={typeof v.index === 'number' ? v.index + 1 : ''} />
           </ListItemButton>
         </ListItem>)}
       </List>
@@ -166,8 +166,8 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
 
   useEffect(() => {
     setTocClick((v: TocContent) => {
-      setPage(v.index);
-      deb(id, (v.index / pages));
+      setPage(v.index as number);
+      deb(id, (v.index as number / pages));
     })
   })
 
@@ -288,7 +288,7 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
   </Document>
 }
 
-function EpubViewer({ file, setBar, drawer, deb, id, progress, bar }: ReaderProps) {
+function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setTocClick }: ReaderProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const book = useRef<Book | null>(null);
   const [rendition, setRend] = useState<Rendition | null>(null);
@@ -305,7 +305,9 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar }: ReaderProp
       })
 
       setRend(c);
-      c?.display().then(() => book.current?.locations.generate(1024).finally(() => setiRed(true)));
+      c?.display().then(() => {
+        book.current?.locations.generate(1024).finally(() => setiRed(true))
+      });
     }
 
     return () => {
@@ -315,6 +317,18 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar }: ReaderProp
       } catch (e) { console.log(e) }
     }
   }, [file])
+
+  useEffect(() => {
+    if (book.current && ready)
+      setToc(book.current.navigation.toc.map(v => {
+        return {
+          title: v.label,
+          index: v.href
+        }
+      }));
+
+    setTocClick((v: TocContent) => rendition?.display(v.index as string))
+  }, [setToc, setTocClick, rendition, ready])
 
   useEffect(() => {
     if (iReady) {

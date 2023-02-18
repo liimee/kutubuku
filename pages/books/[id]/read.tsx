@@ -319,16 +319,18 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
   }, [file])
 
   useEffect(() => {
-    if (book.current && ready)
-      setToc(book.current.navigation.toc.map(v => {
+    setTocClick((v: TocContent) => rendition?.display(v.index as string))
+  }, [setTocClick, rendition])
+
+  useEffect(() => {
+    if (book.current && iReady)
+      setToc(book.current.navigation?.toc.map(v => {
         return {
           title: v.label,
           index: v.href
         }
       }));
-
-    setTocClick((v: TocContent) => rendition?.display(v.index as string))
-  }, [setToc, setTocClick, rendition, ready])
+  }, [setToc, iReady])
 
   useEffect(() => {
     if (iReady) {
@@ -351,19 +353,20 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
 
   const click = useCallback((e: MouseEvent) => {
     if (!drawer) {
-      if (e.clientY > window.top!.innerHeight * 0.64) {
-        setBar(b => !b);
-      } else {
-        setBar(b => {
-          if (b) {
-            return false
-          } else {
-            actuallyClick(e);
-          }
+      if (!(e.target as Element).closest('a'))
+        if (e.clientY > window.top!.innerHeight * 0.64) {
+          setBar(b => !b);
+        } else {
+          setBar(b => {
+            if (b) {
+              return false
+            } else {
+              actuallyClick(e);
+            }
 
-          return b
-        });
-      }
+            return b
+          });
+        }
     }
   }, [actuallyClick, drawer, setBar])
 

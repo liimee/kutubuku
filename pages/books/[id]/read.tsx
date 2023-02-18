@@ -322,7 +322,9 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar }: ReaderProp
 
       rendition?.display(book.current?.locations.cfiFromPercentage(progress)).then(() => setReady(true))
     }
-  }, [progress, rendition, iReady])
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rendition, iReady])
 
   const actuallyClick = useCallback((e: MouseEvent) => {
     // @ts-ignore

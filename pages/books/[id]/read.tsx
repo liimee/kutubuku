@@ -101,6 +101,18 @@ export default function Read() {
     return () => debs.cancel()
   }, [debs])
 
+  const viewerProps = {
+    drawer,
+    setBar,
+    file: file as ArrayBuffer,
+    deb,
+    progress,
+    bar,
+    id: id as string,
+    setToc,
+    setTocClick: (v: any) => { onTocClick.current = v }
+  }
+
   return <>
     <Head>
       <title>{title || 'Loading book...'}</title>
@@ -108,8 +120,8 @@ export default function Read() {
 
     {file ?
       filetype === 'application/epub+zip' ?
-        <EpubViewer drawer={drawer} setBar={setBar} file={file} deb={deb} id={id as string} progress={progress} /> :
-        <PdfViewer file={file} progress={progress} setBar={setBar} deb={deb} drawer={drawer} bar={bar} id={id as string} setToc={setToc} setTocClick={(v: any) => { onTocClick.current = v }} />
+        <EpubViewer {...viewerProps} /> :
+        <PdfViewer {...viewerProps} />
       : <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
 
     <Slide appear={true} direction='up' in={bar}>

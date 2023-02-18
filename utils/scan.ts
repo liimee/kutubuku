@@ -81,12 +81,22 @@ export default function scan() {
         }).then(uniq => {
           if (!uniq) {
             epub.createAsync(v).then((ep: epub) => {
-              gBookApi.search({
-                filters: {
-                  title: ep.metadata.title || path.parse(v).name,
-                  author: ep.metadata.creator
-                }
-              }).then(res => addToDb(res, v, thumbnailPath));
+              const { title, creator, description, cover } = ep.metadata;
+
+              if (title && creator) {
+                client.book.create({
+                  data: {
+                    title,
+                    desc: description?.replace(/(<([^>]+)>)/gi, ""),
+                    author: creator,
+                    path: v
+                  }
+                }).then(v => {
+                  ep.getImageAsync(cover).then((img: [Buffer, string]) => {
+                    writeFileSync(path.join(thumbnailPath, v.id + '.jpg'), img[0])
+                  });
+                })
+              }
             });
           }
         });

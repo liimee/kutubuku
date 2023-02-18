@@ -272,7 +272,7 @@ function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTo
   </Document>
 }
 
-function EpubViewer({ file, setBar, drawer, deb, id, progress }: ReaderProps) {
+function EpubViewer({ file, setBar, drawer, deb, id, progress, bar }: ReaderProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const book = useRef<Book | null>(null);
   const [rendition, setRend] = useState<Rendition | null>(null);
@@ -342,6 +342,32 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress }: ReaderProps) {
       rendition?.off('click', click);
     }
   }, [click, rendition])
+
+  useEffect(() => {
+    function keyboard(e: KeyboardEvent) {
+      if (e.key === 'ArrowRight') {
+        actuallyClick(new MouseEvent('mousedown', {
+          clientX: window.top!.innerWidth * 100000
+        }));
+      } else if (e.key === 'ArrowLeft') {
+        actuallyClick(new MouseEvent('mousedown', {
+          clientX: 0
+        }));
+      } else if (e.key === 'Escape' && bar) {
+        setBar(false);
+      } else if (e.key === ' ') {
+        setBar(b => !b);
+      }
+    }
+
+    window.addEventListener('keydown', keyboard);
+    rendition?.on('keydown', keyboard);
+
+    return () => {
+      window.removeEventListener('keydown', keyboard);
+      rendition?.off('keydown', keyboard);
+    }
+  }, [actuallyClick, bar, rendition, setBar])
 
   useEffect(() => {
     function onRelocated(loc: Location) {

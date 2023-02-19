@@ -1,6 +1,6 @@
 import BookThumb from "@/utils/bookthumb";
 import PlayArrow from "@mui/icons-material/PlayArrow";
-import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Snackbar, Stack, Tooltip, Typography } from "@mui/material";
+import { Link as MuiLink, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Snackbar, Stack, Tooltip, Typography } from "@mui/material";
 import { Container } from "@mui/system";
 import Head from "next/head";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import DownloadingIcon from '@mui/icons-material/Downloading';
 import Edit from "@mui/icons-material/Edit";
 import Add from "@mui/icons-material/Add";
 import Remove from "@mui/icons-material/Remove";
+import ErrorPage from "@/utils/error";
 
 export default function Book() {
   const router = useRouter();
@@ -28,7 +29,12 @@ export default function Book() {
   const [progDisabled, setProgDisabled] = useState(false);
   const [progConfirm, setProgConfirm] = useState(false);
 
-  const fetchBook = useCallback(() => fetch('/api/book/' + encodeURIComponent(id as string)).then((res) => res.json()).then(setBook), [id]);
+  const [resp, setResp] = useState<Response | null>(null);
+
+  const fetchBook = useCallback(() => fetch('/api/book/' + encodeURIComponent(id as string)).then((res) => {
+    if (res.ok) return res.json();
+    return new Promise((_, reject) => reject(res));
+  }).then(setBook, (res) => setResp(res)), [id]);
 
   useEffect(() => {
     if (id) {
@@ -82,47 +88,48 @@ export default function Book() {
   return (
     <>
       <Container maxWidth='sm' sx={{ p: 3 }}>
-        {book === 0 ? <CircularProgress /> :
-          <Stack direction='row' spacing={2}>
-            <div>
-              <Box sx={{
-                width: {
-                  xs: '30vw',
-                  sm: '11rem'
-                },
-                minWidth: '100px'
-              }}>
-                <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} alt="Book cover" />
-              </Box>
-              <Box sx={{ width: '100%', display: 'flex' }}>
-                <Button variant="text" sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
-                <Tooltip title={isDownloading ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download'}>
-                  <IconButton onClick={downloadOrDelete} color='primary' disabled={isDownloading}>{isDownloading ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
-                </Tooltip>
-              </Box>
-              {book.BookProgress.length > 0 ? <Button fullWidth variant='text' disabled={progDisabled} color='error' startIcon={<Remove />} onClick={() => {
-                setProgDisabled(true);
-                setProgConfirm(true);
-              }}>Remove from My books</Button> : <Button fullWidth variant='text' disabled={progDisabled} startIcon={<Add />} onClick={() => {
-                setProgDisabled(true);
+        {(book === 0 && !resp) ? <CircularProgress /> :
+          resp && !resp.ok ? <ErrorPage res={resp!} desc={<>Let&apos;s find some more interesting reads on the <MuiLink href='/' component={Link}>Explore page</MuiLink> instead.</>} /> :
+            <Stack direction='row' spacing={2}>
+              <div>
+                <Box sx={{
+                  width: {
+                    xs: '30vw',
+                    sm: '11rem'
+                  },
+                  minWidth: '100px'
+                }}>
+                  <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} alt="Book cover" />
+                </Box>
+                <Box sx={{ width: '100%', display: 'flex' }}>
+                  <Button variant="text" sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
+                  <Tooltip title={isDownloading ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download'}>
+                    <IconButton onClick={downloadOrDelete} color='primary' disabled={isDownloading}>{isDownloading ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
+                  </Tooltip>
+                </Box>
+                {book.BookProgress.length > 0 ? <Button fullWidth variant='text' disabled={progDisabled} color='error' startIcon={<Remove />} onClick={() => {
+                  setProgDisabled(true);
+                  setProgConfirm(true);
+                }}>Remove from My books</Button> : <Button fullWidth variant='text' disabled={progDisabled} startIcon={<Add />} onClick={() => {
+                  setProgDisabled(true);
 
-                fetch('/api/book/' + router.query.id + '/progress', {
-                  method: 'POST'
-                }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
-              }}>Add to My books</Button>}
-            </div>
-            <div>
-              <Head>
-                <title>{book.title}</title>
-              </Head>
-              <Box display='flex'>
-                <Typography sx={{ flexGrow: 1 }} variant='h4' component='h1' lineHeight={1.1}>{book.title}</Typography>
-                <Box m='auto'><IconButton href={`/books/${id}/edit`} LinkComponent={Link}><Edit /></IconButton></Box>
-              </Box>
-              <Typography fontStyle='italic' color='GrayText'>{book.author}</Typography>
-              <Typography textAlign='justify' whiteSpace='pre-wrap'>{book.desc}</Typography>
-            </div>
-          </Stack>
+                  fetch('/api/book/' + router.query.id + '/progress', {
+                    method: 'POST'
+                  }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
+                }}>Add to My books</Button>}
+              </div>
+              <div>
+                <Head>
+                  <title>{book.title}</title>
+                </Head>
+                <Box display='flex'>
+                  <Typography sx={{ flexGrow: 1 }} variant='h4' component='h1' lineHeight={1.1}>{book.title}</Typography>
+                  <Box m='auto'><IconButton href={`/books/${id}/edit`} LinkComponent={Link}><Edit /></IconButton></Box>
+                </Box>
+                <Typography fontStyle='italic' color='GrayText'>{book.author}</Typography>
+                <Typography textAlign='justify' whiteSpace='pre-wrap'>{book.desc}</Typography>
+              </div>
+            </Stack>
         }
       </Container>
 

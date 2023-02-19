@@ -27,7 +27,7 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
         res.status(500).send('no :(')
       }
     } else {
-      res.json(await client.book.findUnique({
+      const dbRes = await client.book.findUnique({
         where: {
           id: req.query.id as string
         },
@@ -39,7 +39,13 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
             take: 1
           }
         }
-      }))
+      })
+
+      if (!dbRes) {
+        res.status(404).send('Book does not exist');
+      } else {
+        res.json(dbRes)
+      }
     }
   } else {
     res.status(401).send('Unauthorized :)');

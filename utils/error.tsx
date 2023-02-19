@@ -2,7 +2,7 @@ import { Container, Typography } from "@mui/material";
 import Head from "next/head";
 import { ReactElement, useEffect, useState } from "react";
 
-export default function ErrorPage({ res, desc }: { res: Response, desc: ReactElement }) {
+export default function ErrorPage({ res, desc }: { res: Response, desc: ReactElement | string }) {
   const [title, setTitle] = useState('');
 
   useEffect(() => {

@@ -1,14 +1,17 @@
-import { AppBar, CircularProgress, Drawer, IconButton, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar, useMediaQuery } from '@mui/material';
+import { AppBar, CircularProgress, Container, Dialog, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ListIcon from '@mui/icons-material/List';
 import Head from 'next/head';
 import Epub, { Book, Location, Rendition } from 'epubjs';
+import ErrorPage from '@/utils/error';
+import NextLink from 'next/link';
+import type { TransitionProps } from '@mui/material/transitions';
 
 type TocContent = {
   index: number | string,
@@ -42,17 +45,23 @@ export default function Read() {
   const [file, setFile] = useState<ArrayBuffer | null>(null);
   const [filetype, setFtype] = useState('application/pdf');
 
+  const [resp, setRes] = useState<Response | null>(null);
+
   useEffect(() => {
     if (id) {
       fetch(`/api/book/${id}/file`).then(res => {
-        setFtype(res.headers.get('Content-Type') || 'application/pdf');
-        return res.arrayBuffer()
-      }).then(setFile);
+        if (res.ok) {
+          setFtype(res.headers.get('Content-Type') || 'application/pdf');
+          res.arrayBuffer().then(setFile)
+        } else {
+          setRes(res);
+        }
+      })
     }
   }, [id])
 
   useEffect(() => {
-    if (id) fetch(`/api/book/${id}/progress`).then(v => v.json()).then(v => {
+    if (id) fetch(`/api/book/${id}/progress`).then(v => v.json(), () => new Promise((_, reject) => reject())).then(v => {
       console.log(v)
       setTitle(v.book?.title || 'Book');
       setProgress(v.progress)
@@ -61,7 +70,7 @@ export default function Read() {
         things: [`/api/book/${id}/progress`],
         name: 'apis'
       })
-    });
+    }, () => { });
   }, [id])
 
   const debs = useRef(debounce((id, progress) => {
@@ -118,11 +127,26 @@ export default function Read() {
       <title>{title || 'Loading book...'}</title>
     </Head>
 
-    {file ?
-      filetype === 'application/epub+zip' ?
-        <EpubViewer {...viewerProps} /> :
-        <PdfViewer {...viewerProps} />
-      : <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
+    {resp ? <Dialog PaperProps={{ sx: { bgcolor: '#FFF8E9' } }} open={true} fullScreen TransitionComponent={forwardRef(function Transition(
+      props: TransitionProps & {
+        children: React.ReactElement;
+      },
+      ref: React.Ref<unknown>,
+    ) {
+      return <Slide direction="up" ref={ref} {...props} />;
+    })}>
+      <Container maxWidth='sm' sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+        <ErrorPage res={resp} desc={<>
+          Basically, that means that the book with the ID &apos;{id}&apos; does not exist, or, for some reason, the file of the book (PDF/ePub) was not found on the server. Let&apos;s find something else to read on the <Link component={NextLink} href='/'>Explore page</Link>.
+        </>} />
+      </Container>
+    </Dialog> :
+      file ?
+        filetype === 'application/epub+zip' ?
+          <EpubViewer {...viewerProps} /> :
+          <PdfViewer {...viewerProps} />
+        : <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+    }
 
     <Slide appear={true} direction='up' in={bar}>
       <AppBar position='fixed' sx={{ bottom: 0, top: 'auto' }}>

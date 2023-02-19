@@ -3,6 +3,7 @@ import { createReadStream, existsSync, statSync } from "fs";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]";
+import { extname } from 'path';
 
 export default async function bookInfo(req: NextApiRequest, res: NextApiResponse) {
   const session = await unstable_getServerSession(req, res, authOptions)
@@ -14,11 +15,11 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
       }
     }))?.path
 
-    if(path && existsSync(path)) {
+    if (path && existsSync(path)) {
       const stat = statSync(path);
 
       res.writeHead(200, {
-        'Content-Type': 'application/pdf',
+        'Content-Type': extname(path) === '.epub' ? 'application/epub+zip' : 'application/pdf',
         'Content-Length': stat.size
       })
 

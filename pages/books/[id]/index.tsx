@@ -53,9 +53,13 @@ export default function Book() {
         thing: `/api/book/${id}/file`,
         name: 'books'
       }).then(v => {
-        setDown(v.includes(id as string));
         downloading(false);
-        setMsg('Book downloaded!');
+        if (v.error) {
+          setMsg('Failed to download. Check your network connection, or there may be not enough space for the book to be stored.');
+        } else {
+          setMsg('Book downloaded!');
+          setDown(v.includes(id as string));
+        }
         sSnack(true);
       })
     }
@@ -144,11 +148,7 @@ export default function Book() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snack} autoHideDuration={5000} onClose={() => sSnack(false)}>
-        <Alert severity="success" sx={{ width: '100%' }}>
-          {msg}
-        </Alert>
-      </Snackbar>
+      <Snackbar open={snack} autoHideDuration={5000} onClose={() => sSnack(false)} message={msg} />
 
       <ConfirmRemove open={progConfirm} onClose={() => {
         setProgDisabled(false);

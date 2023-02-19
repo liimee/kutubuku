@@ -3,6 +3,7 @@ import glob from 'glob';
 import { GoogleBooksAPI } from "google-books-js";
 import path from "path";
 import client from './prisma';
+import epub from 'epub2';
 
 // @types/pdfinfo does not exist?
 // @ts-ignore
@@ -64,5 +65,45 @@ export default function scan() {
         })
       })
     })
+
+    glob(path.join(v, '*.epub'), {}, (_, files) => {
+      console.log(files)
+
+      files.forEach(v => {
+        client.book.findUnique({
+          where: {
+            path: v
+          }
+        }).then(uniq => {
+          if (!uniq) {
+            epub.createAsync(v).then((ep: epub) => {
+              const { title, creator, description, cover } = ep.metadata;
+
+              if (title && creator) {
+                gBookApi.search({
+                  filters: {
+                    title: title || path.parse(v).name,
+                    author: creator
+                  }
+                }).then(res => {
+                  client.book.create({
+                    data: {
+                      title,
+                      desc: description?.replace(/(<([^>]+)>)/gi, "") || res.items[0]?.volumeInfo.description,
+                      author: creator,
+                      path: v
+                    }
+                  }).then(v => {
+                    ep.getImageAsync(cover).then((img: [Buffer, string]) => {
+                      writeFileSync(path.join(thumbnailPath, v.id + '.jpg'), img[0])
+                    });
+                  })
+                })
+              }
+            });
+          }
+        });
+      });
+    });
   })
 }

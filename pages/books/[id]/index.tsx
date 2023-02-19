@@ -116,7 +116,7 @@ export default function Book() {
                 <Box m='auto'><IconButton href={`/books/${id}/edit`} LinkComponent={Link}><Edit /></IconButton></Box>
               </Box>
               <Typography fontStyle='italic' color='GrayText'>{book.author}</Typography>
-              <Typography textAlign='justify'>{book.desc}</Typography>
+              <Typography textAlign='justify' whiteSpace='pre-wrap'>{book.desc}</Typography>
             </div>
           </Stack>
         }

@@ -49,13 +49,12 @@ export default function scan() {
                         path: v,
                         title: item.title,
                         desc: item.description,
-                        author: item.authors.join(', '),
-                        id: res.items[0].id
+                        author: item.authors.join(', ')
                       }
                     }).then((dbres) => {
                       console.log(dbres);
 
-                      fetch(item.imageLinks.thumbnail).then(v => v.arrayBuffer()).then(v => writeFileSync(path.join(thumbnailPath, res.items[0].id + '.jpg'), Buffer.from(v)))
+                      fetch(item.imageLinks.thumbnail).then(v => v.arrayBuffer()).then(v => writeFileSync(path.join(thumbnailPath, dbres.id + '.jpg'), Buffer.from(v)))
                     })
                   }
                 })

@@ -1,4 +1,4 @@
-import { AppBar, CircularProgress, Container, Dialog, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar, useMediaQuery } from '@mui/material';
+import { AppBar, CircularProgress, Container, Dialog, DialogContent, DialogTitle, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -8,9 +8,10 @@ import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ListIcon from '@mui/icons-material/List';
 import Head from 'next/head';
-import Epub, { Book, Location, Rendition } from 'epubjs';
+import Epub, { Book, Contents, Location, Rendition } from 'epubjs';
 import ErrorPage from '@/utils/error';
 import NextLink from 'next/link';
+import CloseIcon from '@mui/icons-material/Close';
 import type { TransitionProps } from '@mui/material/transitions';
 
 type TocContent = {
@@ -319,6 +320,59 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
   const [ready, setReady] = useState(false);
   const [iReady, setiRed] = useState(false);
 
+  const [dialog, setDialog] = useState<string | null>(null);
+  const dialogRef = useCallback((node: HTMLDivElement) => {
+    if (node !== null) {
+      if (dialog) {
+        dialogRend.current = book.current!.renderTo(node, {
+          manager: 'default',
+          width: '100%'
+        });
+
+        const url = new URL(dialog);
+
+        dialogRend.current.hooks.content.register((contents: Contents) => {
+          const selected = contents.document.getElementById(url.hash.replace('#', ''));
+
+          if (selected) {
+            contents.document.body.innerHTML = selected.outerHTML;
+          }
+
+          const links = contents.document.querySelectorAll('a')
+          links.forEach(v => {
+            if (!isFootnote(v)) {
+              v.onclick = e => {
+                e.preventDefault();
+
+                closeDialog();
+
+                const url = new URL((e.target as HTMLAnchorElement).href);
+                rendition?.display(book.current?.path.relative(url.pathname + url.search + url.hash))
+              }
+            }
+          })
+        })
+
+        dialogRend.current.display(book.current?.path.relative(url.pathname + url.search + url.hash));
+      }
+    }
+  }, [dialog, rendition]);
+
+  const dialogRend = useRef<Rendition | null>(null);
+
+  function isFootnote(node: Element) {
+    const decs = node.querySelectorAll('*');
+
+    return [...Array.from(decs), node].filter((el: Element) => {
+      const style = window.getComputedStyle(el);
+      const epType = node.closest('[epub\\:type]')?.getAttribute('epub:type');
+
+      return epType !== 'footnote' && (epType == 'noteref' ||
+        (['inline', 'inline-block'].includes(style.display) &&
+          ['sub', 'super', 'top', 'bottom'].includes(style.verticalAlign)))
+    }).length > 0
+  }
+
   useEffect(() => {
     let c: Rendition | null;
 
@@ -326,6 +380,19 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
       book.current = Epub(file);
       c = book.current?.renderTo(div.current, {
         manager: 'default'
+      })
+
+      c.hooks.content.register((contents: Contents) => {
+        const links = contents.document.querySelectorAll('a')
+        links.forEach(v => {
+          if (isFootnote(v as Element)) {
+            v.onclick = e => {
+              e.preventDefault();
+
+              if (book.current) setDialog((e.target as Element).tagName.toLowerCase() === 'a' ? (e.target as HTMLAnchorElement).href : (e.target as Element).closest('a')!.href)
+            }
+          }
+        })
       })
 
       setRend(c);
@@ -338,6 +405,8 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
       try {
         c?.destroy();
         book.current?.destroy();
+
+        book.current = null;
       } catch (e) { console.log(e) }
     }
   }, [file])
@@ -377,7 +446,9 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
 
   const click = useCallback((e: MouseEvent) => {
     if (!drawer) {
-      if (!(e.target as Element).closest('a'))
+      const closestA = (e.target as Element).closest('a');
+
+      if (!closestA)
         if (e.clientY > window.top!.innerHeight * 0.64) {
           setBar(b => !b);
         } else {
@@ -441,11 +512,28 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
     }
   }, [rendition, id, deb])
 
+  function closeDialog() {
+    dialogRend.current?.destroy();
+    setDialog(null);
+    dialogRend.current = null;
+  }
+
   return <>
     <div style={{
       display: !ready ? 'none' : 'block'
     }} ref={div}>
     </div>
+    <Dialog maxWidth='sm' scroll='body' fullWidth PaperProps={{ sx: { minHeight: '200px' } }} open={dialog !== null} onClose={closeDialog}>
+      <DialogTitle>
+        <div style={{ flex: 1, display: 'flex' }}>
+          <div style={{ flexGrow: 1, margin: 'auto' }}>Footnote</div>
+          <IconButton onClick={closeDialog}><CloseIcon /></IconButton>
+        </div>
+      </DialogTitle>
+      <DialogContent>
+        <div style={{ width: '100%' }} ref={dialogRef}></div>
+      </DialogContent>
+    </Dialog>
     {!ready && <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
   </>
 }

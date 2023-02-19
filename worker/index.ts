@@ -33,7 +33,9 @@ self.addEventListener('message', event => {
               console.log('Downloaded ' + data.thing);
 
               returnKeys(event, cache)
-            })
+            }, () => event.ports[0].postMessage({
+              error: true
+            }))
           } else {
             console.log(data.thing + ' is already in cache')
             returnKeys(event, cache)

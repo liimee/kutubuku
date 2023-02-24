@@ -26,6 +26,11 @@ export default function Book() {
   const [snack, sSnack] = useState(false);
   const [msg, setMsg] = useState('');
 
+  const [meta, setMeta] = useState<{
+    size: number,
+    type: string
+  } | null>(null);
+
   const [progDisabled, setProgDisabled] = useState(false);
   const [progConfirm, setProgConfirm] = useState(false);
 
@@ -83,6 +88,17 @@ export default function Book() {
     })
   }
 
+  useEffect(() => {
+    if (id) fetch('/api/book/' + id + '/file', {
+      method: 'HEAD'
+    }).then(v => {
+      setMeta({
+        size: parseInt(v.headers.get('Content-Length')!),
+        type: v.headers.get('Content-Type') === 'application/epub+zip' ? 'ePub' : 'PDF'
+      })
+    })
+  }, [id])
+
   const handleClose = () => setOpen(false);
 
   return (
@@ -117,6 +133,10 @@ export default function Book() {
                     method: 'POST'
                   }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
                 }}>Add to My books</Button>}
+                {meta &&
+                  <Typography color='gray' textAlign='center'>
+                    {meta.type} &middot; {(meta.size * 0.000001).toFixed(2)} MB
+                  </Typography>}
               </div>
               <div>
                 <Head>

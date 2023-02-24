@@ -319,6 +319,7 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
   const [rendition, setRend] = useState<Rendition | null>(null);
   const [ready, setReady] = useState(false);
   const [iReady, setiRed] = useState(false);
+  const somethingSelected = useRef(false);
 
   const [dialog, setDialog] = useState<string | null>(null);
   const dialogRef = useCallback((node: HTMLDivElement) => {
@@ -393,6 +394,11 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
             }
           }
         })
+
+        contents.document.addEventListener('selectionchange', () => {
+          const selection = contents.document.getSelection();
+          somethingSelected.current = (selection != null && selection.toString().length > 0)
+        })
       })
 
       setRend(c);
@@ -445,7 +451,8 @@ function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setT
   }, [rendition])
 
   const click = useCallback((e: MouseEvent) => {
-    if (!drawer) {
+    console.log(somethingSelected.current)
+    if (!drawer && !somethingSelected.current) {
       const closestA = (e.target as Element).closest('a');
 
       if (!closestA)

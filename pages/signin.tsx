@@ -30,7 +30,7 @@ export default function Index() {
           margin: 'auto'
         }} width={120} alt='kutubuku icon' />
 
-        <Typography variant="h4" component="h1" my={2}>
+        <Typography variant="h5" textAlign='center' component="h1" my={2}>
           Sign in
         </Typography>
 

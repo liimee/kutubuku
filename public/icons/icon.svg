@@ -1,134 +1,43 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   width="311.10623"
-   height="311.10623"
-   viewBox="0 0 82.313523 82.313523"
-   version="1.1"
-   id="svg5"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs2" />
-  <g
-     id="layer1"
-     transform="translate(-62.736252,-101.44585)">
-    <circle
-       style="fill:#e9ddaf;stroke-width:1;stroke-linecap:round;stroke-linejoin:round"
-       id="path846"
-       cx="103.89301"
-       cy="142.60262"
-       r="41.156761" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:33.2318px;line-height:1.25;font-family:sans-serif;fill:#4d4d4d;fill-opacity:1;stroke:none;stroke-width:0.830795"
-       x="74.803543"
-       y="143.17291"
-       id="text1006"><tspan
-         id="tspan1004"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif Bold';fill:#4d4d4d;stroke-width:0.830795"
-         x="74.803543"
-         y="143.17291">K</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="102.81472"
-       y="125.63924"
-       id="text1168"><tspan
-         id="tspan1166"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="102.81472"
-         y="125.63924">utubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="102.81472"
-       y="131.46004"
-       id="text1172"><tspan
-         id="tspan1170"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="102.81472"
-         y="131.46004">utubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="102.81472"
-       y="137.28079"
-       id="text1176"><tspan
-         id="tspan1174"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="102.81472"
-         y="137.28079">utubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="102.81472"
-       y="143.10155"
-       id="text1180"><tspan
-         id="tspan1178"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="102.81472"
-         y="143.10155">utubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="74.278259"
-       y="149.68184"
-       id="text1184"><tspan
-         id="tspan1182"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="74.278259"
-         y="149.68184">kutubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="74.278259"
-       y="156.03175"
-       id="text1188"><tspan
-         id="tspan1186"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="74.278259"
-         y="156.03175">kutubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="74.278259"
-       y="162.91083"
-       id="text1192"><tspan
-         id="tspan1190"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="74.278259"
-         y="162.91083">kutubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="104.44075"
-       y="149.68184"
-       id="text1196"><tspan
-         id="tspan1194"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="104.44075"
-         y="149.68184">kutubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="104.44075"
-       y="156.03175"
-       id="text1200"><tspan
-         id="tspan1198"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="104.44075"
-         y="156.03175">kutubuku</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.96758px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19919"
-       x="104.44075"
-       y="162.91083"
-       id="text1204"><tspan
-         id="tspan1202"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Liberation Serif';-inkscape-font-specification:'Liberation Serif';fill:#666666;stroke-width:0.19919"
-         x="104.44075"
-         y="162.91083">kutubuku</tspan></text>
-  </g>
+<svg width="311.11" height="311.11" version="1.1" viewBox="0 0 82.314 82.314" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <defs>
+  <clipPath id="a">
+   <circle cx="41.157" cy="41.157" r="41.157" fill="#e9ddaf" stroke-linecap="round" stroke-linejoin="round"/>
+  </clipPath>
+  <clipPath id="d">
+   <circle cx="52.442" cy="8.7857" r="41.157" d="M 93.598961,8.7856865 A 41.156761,41.156761 0 0 1 52.4422,49.942448 41.156761,41.156761 0 0 1 11.285439,8.7856865 41.156761,41.156761 0 0 1 52.4422,-32.371075 41.156761,41.156761 0 0 1 93.598961,8.7856865 Z" clip-path="url(#a)" display="none" fill="#935d1d" stroke-linecap="round" stroke-linejoin="round"/>
+   <path class="powerclip" d="m-5-5h92.314v92.314h-92.314zm98.599 13.786a41.157 41.157 0 0 0-41.157-41.157 41.157 41.157 0 0 0-41.157 41.157 41.157 41.157 0 0 0 41.157 41.157 41.157 41.157 0 0 0 41.157-41.157z" fill="#935d1d" stroke-linecap="round" stroke-linejoin="round"/>
+  </clipPath>
+  <clipPath id="c">
+   <path d="m37.375 65.179h-10.883v-51.107l10.883-1.1709zm11.778-20.388 13.018 20.388h-12.398l-11.985-20.043 12.054-16.531h11.365z" fill="#935d1d" stroke-width="1.7219"/>
+  </clipPath>
+  <filter id="b" x=".14101" y=".42719" width=".52092" height=".62202" color-interpolation-filters="sRGB">
+   <feFlood flood-color="rgb(0,0,0)" flood-opacity=".58824" result="flood"/>
+   <feComposite in="flood" in2="SourceGraphic" operator="in" result="composite1"/>
+   <feGaussianBlur in="composite1" result="blur" stdDeviation="1.5"/>
+   <feOffset dx="0" dy="1.2" result="offset"/>
+   <feComposite in="SourceGraphic" in2="offset" result="composite2"/>
+  </filter>
+ </defs>
+ <path d="m82.314 41.157a41.157 41.157 0 0 1-41.157 41.157 41.157 41.157 0 0 1-41.157-41.157 41.157 41.157 0 0 1 41.157-41.157 41.157 41.157 0 0 1 41.157 41.157z" clip-path="url(#d)" fill="#e9ddaf" stroke-linecap="round" stroke-linejoin="round"/>
+ <circle cx="52.442" cy="8.7857" r="41.157" clip-path="url(#a)" fill="#935d1d" stroke-linecap="round" stroke-linejoin="round"/>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <cc:license rdf:resource="http://creativecommons.org/licenses/by/4.0/"/>
+   </cc:Work>
+   <cc:License rdf:about="http://creativecommons.org/licenses/by/4.0/">
+    <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"/>
+    <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"/>
+    <cc:requires rdf:resource="http://creativecommons.org/ns#Notice"/>
+    <cc:requires rdf:resource="http://creativecommons.org/ns#Attribution"/>
+    <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
+   </cc:License>
+  </rdf:RDF>
+ </metadata>
+ <g filter="url(#b)">
+  <path transform="translate(-62.736 -101.45)" d="m100.11 166.63h-10.883v-51.107l10.883-1.1709zm11.778-20.388 13.018 20.388h-12.398l-11.985-20.043 12.054-16.531h11.365z" fill="#935d1d" stroke-width="1.7219"/>
+  <circle cx="52.442" cy="8.7857" r="41.157" clip-path="url(#c)" fill="#e9ddaf" stroke-linecap="round" stroke-linejoin="round"/>
+ </g>
 </svg>

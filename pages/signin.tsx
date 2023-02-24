@@ -6,6 +6,8 @@ import { useRouter } from "next/router";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import Head from "next/head";
+import icon from '@/public/icons/icon.svg';
+import Image from 'next/image';
 
 export default function Index() {
   const router = useRouter();
@@ -23,6 +25,11 @@ export default function Index() {
         '& form>*': { my: 1 },
         minWidth: '40%', padding: '24px 16px'
       }}>
+        <Image src={icon} style={{
+          display: 'block',
+          margin: 'auto'
+        }} width={120} alt='kutubuku icon' />
+
         <Typography variant="h4" component="h1" my={2}>
           Sign in
         </Typography>

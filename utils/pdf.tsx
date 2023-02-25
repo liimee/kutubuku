@@ -168,7 +168,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
       const selection = document.getSelection();
 
       somethingSelected.current = (selection != null
-        && (selection.anchorNode!.parentElement!.closest('.react-pdf__Document') != null
+        && (selection.anchorNode?.parentElement?.closest('.react-pdf__Document') != null
           && (selection.toString().length > 0)
         )
       )

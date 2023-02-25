@@ -1,7 +1,5 @@
 import { AppBar, CircularProgress, Container, Dialog, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar } from '@mui/material';
 import { useRouter } from 'next/router';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';

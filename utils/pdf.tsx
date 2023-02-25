@@ -2,6 +2,8 @@ import { useMediaQuery, CircularProgress } from "@mui/material";
 import { useRef, useState, useEffect } from "react";
 import { PDFPageProxy, pdfjs, Page, Document } from "react-pdf";
 import { ReaderProps, TocContent } from "./type";
+import 'react-pdf/dist/esm/Page/TextLayer.css'
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
 
 export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTocClick }: ReaderProps) {
   var pdf = useRef<HTMLDivElement>();
@@ -11,6 +13,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
   const [pageNum, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   var [pdfViewport, setViewport] = useState<PDFPageProxy | undefined>();
+  const somethingSelected = useRef(false);
 
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
@@ -38,7 +41,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
     }
 
     function click(e: MouseEvent) {
-      if (!drawer) {
+      if (!drawer && !somethingSelected.current) {
         if (e.clientY > window.innerHeight * 0.64) {
           setBar(b => !b);
         } else {
@@ -113,6 +116,24 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
       window.removeEventListener('resize', resize);
     };
   }, [isSmol, pdf, pdfViewport])
+
+  useEffect(() => {
+    function onSelect() {
+      const selection = document.getSelection();
+
+      somethingSelected.current = (selection != null
+        && (selection.anchorNode!.parentElement!.closest('.react-pdf__Document') != null
+          && (selection.toString().length > 0)
+        )
+      )
+    }
+
+    document.addEventListener('selectionchange', onSelect);
+
+    return () => {
+      document.removeEventListener('selectionchange', onSelect);
+    }
+  }, [])
 
 
   {/* @ts-ignore */ }

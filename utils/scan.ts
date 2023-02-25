@@ -50,7 +50,8 @@ export default function scan() {
                         path: v,
                         title: item.title,
                         desc: item.description,
-                        author: item.authors.join(', ')
+                        author: item.authors.join(', '),
+                        published: new Date(item.publishedDate).toISOString()
                       }
                     }).then((dbres) => {
                       console.log(dbres);
@@ -77,7 +78,7 @@ export default function scan() {
         }).then(uniq => {
           if (!uniq) {
             epub.createAsync(v).then((ep: epub) => {
-              const { title, creator, description, cover } = ep.metadata;
+              const { title, creator, description, cover, date } = ep.metadata;
 
               if (title && creator) {
                 gBookApi.search({
@@ -91,7 +92,8 @@ export default function scan() {
                       title,
                       desc: description?.replace(/(<([^>]+)>)/gi, "") || res.items[0]?.volumeInfo.description,
                       author: creator,
-                      path: v
+                      path: v,
+                      published: date
                     }
                   }).then(v => {
                     ep.getImageAsync(cover).then((img: [Buffer, string]) => {

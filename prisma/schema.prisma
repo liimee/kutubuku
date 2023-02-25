@@ -20,6 +20,7 @@ model Book {
   author       String?
   desc         String?
   id           String     @id @default(cuid())
+  published    DateTime?
   BookProgress Progress[]
 }
 

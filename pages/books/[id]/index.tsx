@@ -148,6 +148,9 @@ export default function Book() {
                 </Box>
                 <Typography fontStyle='italic' color='GrayText'>{book.author}</Typography>
                 <Typography textAlign='justify' whiteSpace='pre-wrap'>{book.desc}</Typography>
+                <Box my={2}>
+                  <Typography fontStyle='italic' color='GrayText'>Published on {new Intl.DateTimeFormat().format(new Date(book.published))}</Typography>
+                </Box>
               </div>
             </Stack>
         }

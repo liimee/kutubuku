@@ -131,7 +131,7 @@ export default function TopBar() {
           <Divider />
           {Object.keys(menu).map(v =>
             <ListItem key={v} disablePadding>
-              <ListItemButton href={v} LinkComponent={NextLink}>
+              <ListItemButton href={v} LinkComponent={NextLink} selected={router.route === v}>
                 <ListItemIcon>
                   {menu[v][0]}
                 </ListItemIcon>

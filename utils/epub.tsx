@@ -4,13 +4,14 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { ReaderProps, TocContent } from "./type";
 import CloseIcon from '@mui/icons-material/Close';
 
-export default function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setTocClick }: ReaderProps) {
+export default function EpubViewer({ file, setBar, drawer, deb, id, progress, bar, setToc, setTocClick, setTocSelect }: ReaderProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const book = useRef<Book | null>(null);
   const [rendition, setRend] = useState<Rendition | null>(null);
   const [ready, setReady] = useState(false);
   const [iReady, setiRed] = useState(false);
   const somethingSelected = useRef(false);
+  const toc = useRef<TocContent[]>([]);
 
   const [dialog, setDialog] = useState<string | null>(null);
   const dialogRef = useCallback((node: HTMLDivElement) => {
@@ -123,14 +124,18 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
       return returned;
     }
 
-    if (book.current && iReady)
-      setToc(book.current.navigation?.toc.map(v => {
+    if (book.current && iReady) {
+      const to = book.current.navigation?.toc.map(v => {
         return {
           title: v.label,
           index: v.href,
           children: v.subitems?.map(mapSub)
         }
-      }));
+      });
+
+      setToc(to);
+      toc.current = to;
+    }
   }, [setToc, iReady])
 
   useEffect(() => {
@@ -211,6 +216,13 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
   useEffect(() => {
     function onRelocated(loc: Location) {
       deb(id, loc.start.percentage)
+
+      const percentage = (v: string) => book.current?.section(v).index || 0;
+
+      setTocSelect(toc.current.reduce((prevIndex, curr, currIndex) =>
+        Math.abs(percentage(curr.index as string) - loc.start.index) < Math.abs(percentage(toc.current[prevIndex].index as string) - loc.start.index) ? currIndex : prevIndex,
+        0
+      ))
     }
 
     if (rendition?.book)
@@ -219,7 +231,7 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
     return () => {
       rendition?.off('relocated', onRelocated);
     }
-  }, [rendition, id, deb])
+  }, [rendition, id, deb, setTocSelect])
 
   function closeDialog() {
     dialogRend.current?.destroy();

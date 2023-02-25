@@ -174,7 +174,7 @@ function Toc({ v, i, onTocClick, setDrawer, tocSelected, depth }: { v: TocConten
 
           setDrawer(false);
         }
-      }} selected={tocSelected === i}>
+      }} selected={tocSelected === i && depth === 1}>
         <ListItemText primary={v.title} secondary={typeof v.index === 'number' ? v.index + 1 : ''} />
         {hasChildren && (open ? <ExpandLess /> : <ExpandMore />)}
       </ListItemButton>

@@ -1,0 +1,3 @@
+# this thing is more of a personal use thing I think
+User-agent: *
+Disallow: /

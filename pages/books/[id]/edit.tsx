@@ -55,7 +55,7 @@ export default function EditBook() {
         }
       }}>
         <TextField fullWidth disabled={loading} required value={title} onChange={e => setTitle(e.target.value)} label='Title' variant="outlined" />
-        <TextField fullWidth disabled={loading} required value={author} onChange={e => setAuthor(e.target.value)} label='Author' variant="outlined" />
+        <TextField fullWidth disabled={loading} value={author} onChange={e => setAuthor(e.target.value)} label='Author' variant="outlined" />
         <TextField fullWidth disabled={loading} value={desc} onChange={e => setDesc(e.target.value)} label='Description' multiline minRows={2} maxRows={6} variant="outlined" />
 
         <Box sx={{ textAlign: 'end' }}>

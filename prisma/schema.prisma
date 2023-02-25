@@ -17,7 +17,7 @@ model User {
 model Book {
   path         String     @unique
   title        String
-  author       String
+  author       String?
   desc         String?
   id           String     @id @default(cuid())
   BookProgress Progress[]

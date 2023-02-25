@@ -1,6 +1,7 @@
 import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
+import { NetworkFirst, CacheFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategies';
 import { Queue, QueueStore } from 'workbox-background-sync';
+import { ExpirationPlugin } from 'workbox-expiration';
 
 declare let self: ServiceWorkerGlobalScope
 
@@ -14,6 +15,11 @@ function returnKeys(event: ExtendableMessageEvent, cache: Cache) {
     event.ports[0].postMessage(mapped);
   });
 }
+
+self.addEventListener('install', () => {
+  // skip over the "waiting" lifecycle state, probably
+  self.skipWaiting();
+});
 
 self.addEventListener('message', event => {
   if (event) {
@@ -75,9 +81,15 @@ async function deleteUrlFromCache(url: string) {
 const bgSync = new Queue('progressQueue', {
   maxRetentionTime: 24 * 60
 })
-
+registerRoute(/\/api\/book\/\w+\/thumb\/?$/, new StaleWhileRevalidate())
 registerRoute(/\/api\/book\/\w+\/?$/, new NetworkFirst({
-  cacheName: 'bookInfo'
+  cacheName: 'bookInfo',
+  plugins: [
+    new ExpirationPlugin({
+      // 21 days/3 weeks I think
+      maxAgeSeconds: 21 * 24 * 60 * 60,
+    })
+  ]
 }), 'GET');
 registerRoute(/\/api\/book\/\w+\/?$/, new NetworkOnly(), 'POST');
 registerRoute(/\/api\/book\/\w+\/progress?\/?$/, async (e) => {
@@ -150,12 +162,21 @@ registerRoute(/\/api\/\w+\/?$/, new NetworkFirst({
   cacheName: 'apis'
 }), 'GET');
 registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
-  cacheName: 'books'
+  cacheName: 'books',
+  plugins: [
+    new ExpirationPlugin({
+      // 21 days/3 weeks I think
+      maxAgeSeconds: 21 * 24 * 60 * 60,
+    })
+  ]
 }), 'GET');
 registerRoute(/\/books\/\w+(?:\/read)?\/?$/, new NetworkFirst({
   cacheName: 'bookPages'
 }), 'GET')
-registerRoute(/\/pdf\.worker\.min\.js\/?$/, new CacheFirst());
+registerRoute(/\/pdf\.worker\.min\.js\/?$/, new CacheFirst({
+  cacheName: 'others'
+}), 'GET');
+registerRoute(/\/\w+\/?$/, new NetworkFirst(), 'GET');
 /* 
 self.addEventListener('fetch', (event) => {
   if (event) {

@@ -5,9 +5,18 @@ import TopBar from '@/utils/appbar';
 import '../styles/globals.css';
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { useEffect } from "react";
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
+
+  useEffect(() => {
+    window.navigator.serviceWorker.controller?.postMessage({
+      do: 'downloadIfNotExist',
+      thing: '/pdf.worker.min.js',
+      name: 'others'
+    })
+  }, []);
 
   return <ThemeProvider theme={createTheme({
     palette: {

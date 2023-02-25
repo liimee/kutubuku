@@ -9,7 +9,7 @@ import ErrorPage from '@/utils/error';
 import NextLink from 'next/link';
 import type { TransitionProps } from '@mui/material/transitions';
 import EpubViewer from '@/utils/epub';
-import type { TocContent } from '@/utils/type';
+import type { ReaderProps, TocContent } from '@/utils/type';
 import PdfViewer from '@/utils/pdf';
 
 export default function Read() {
@@ -23,6 +23,7 @@ export default function Read() {
   const [toc, setToc] = useState<TocContent[]>([]);
   const [drawer, setDrawer] = useState(false);
   const onTocClick = useRef<((v: TocContent) => void) | null>(null);
+  const [tocSelected, setTocSelect] = useState(0);
 
   const [barButtons, setButtons] = useState([]);
 
@@ -94,7 +95,7 @@ export default function Read() {
     return () => debs.cancel()
   }, [debs])
 
-  const viewerProps = {
+  const viewerProps: ReaderProps = {
     drawer,
     setBar,
     file: file as ArrayBuffer,
@@ -104,7 +105,8 @@ export default function Read() {
     id: id as string,
     setToc,
     setTocClick: (v: any) => { onTocClick.current = v },
-    setButtons
+    setButtons,
+    setTocSelect
   }
 
   return <>
@@ -154,7 +156,7 @@ export default function Read() {
             if (onTocClick.current) onTocClick.current(v);
 
             setDrawer(false);
-          }}>
+          }} selected={tocSelected === i}>
             <ListItemText primary={v.title} secondary={typeof v.index === 'number' ? v.index + 1 : ''} />
           </ListItemButton>
         </ListItem>)}

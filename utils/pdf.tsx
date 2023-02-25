@@ -8,7 +8,7 @@ import FormatSize from "@mui/icons-material/FormatSize";
 import ZoomIn from "@mui/icons-material/ZoomIn";
 import ZoomOut from '@mui/icons-material/ZoomOut';
 
-export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTocClick, setButtons }: ReaderProps) {
+export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTocClick, setButtons, setTocSelect }: ReaderProps) {
   var pdf = useRef<HTMLDivElement>();
   const isSmol = useMediaQuery('(max-width: 500px)');
   const [width, setWidth] = useState<number | undefined>(100);
@@ -20,6 +20,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
   const [scale, setScale] = useState(1);
   const [scalePop, setPop] = useState(false);
   const anchor = useRef<HTMLButtonElement>(null);
+  const [toc, selfToc] = useState<TocContent[]>([]);
 
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
@@ -129,6 +130,12 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
     })
   }, [bar, deb, id, isSmol, pages, drawer, setBar, scalePop])
 
+  useEffect(() => {
+    setTocSelect(toc.reduce((prevIndex, curr, currIndex) =>
+      Math.abs(curr.index as number - pageNum) < Math.abs(toc[prevIndex].index as number - pageNum) ? currIndex : prevIndex,
+      0
+    ))
+  }, [pageNum, setTocSelect, toc])
 
   useEffect(() => {
     if (progress) setPage(Math.floor(progress * pages))
@@ -198,6 +205,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
       })
 
       setToc(res);
+      selfToc(res);
     });
   }} loading={<CircularProgress />} file={file}>
     <Page pageIndex={pageNum} noData='' scale={scale} width={width} height={height} />

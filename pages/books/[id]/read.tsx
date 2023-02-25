@@ -24,6 +24,8 @@ export default function Read() {
   const [drawer, setDrawer] = useState(false);
   const onTocClick = useRef<((v: TocContent) => void) | null>(null);
 
+  const [barButtons, setButtons] = useState([]);
+
   const [file, setFile] = useState<ArrayBuffer | null>(null);
   const [filetype, setFtype] = useState('application/pdf');
 
@@ -101,7 +103,8 @@ export default function Read() {
     bar,
     id: id as string,
     setToc,
-    setTocClick: (v: any) => { onTocClick.current = v }
+    setTocClick: (v: any) => { onTocClick.current = v },
+    setButtons
   }
 
   return <>
@@ -137,6 +140,7 @@ export default function Read() {
             <ArrowBack />
           </IconButton>
           <div style={{ flexGrow: 1 }} />
+          {barButtons}
           <IconButton color='inherit' disabled={toc.length < 1} onClick={() => setDrawer(true)}>
             <ListIcon />
           </IconButton>

@@ -47,6 +47,7 @@ export default function App({ Component, pageProps }) {
             `
             body {
               background-color: #fff !important;
+              overflow: hidden;
             }
             `
           }

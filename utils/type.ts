@@ -14,5 +14,6 @@ export type ReaderProps = {
   bar: boolean,
   id: string,
   setToc: Dispatch<SetStateAction<TocContent[]>>,
-  setTocClick: (v: any) => void
+  setTocClick: (v: any) => void,
+  setButtons: (v: any) => void
 }

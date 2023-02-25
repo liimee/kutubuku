@@ -107,15 +107,18 @@ export default function Book() {
         {(book === 0 && !resp) ? <CircularProgress /> :
           resp && !resp.ok ? <ErrorPage res={resp!} desc={<>Let&apos;s find some more interesting reads on the <MuiLink href='/' component={Link}>Explore page</MuiLink> instead.</>} /> :
             <Stack direction='row' spacing={2}>
-              <div>
+              <Box sx={{
+                width: {
+                  xs: '30vw',
+                  sm: '11rem'
+                },
+                minWidth: '100px'
+              }}>
                 <Box sx={{
-                  width: {
-                    xs: '30vw',
-                    sm: '11rem'
-                  },
-                  minWidth: '100px'
+                  width: '100%',
+                  mb: 1
                 }}>
-                  <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} alt="Book cover" />
+                  <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} title={book.title} alt="Book cover" />
                 </Box>
                 <Box sx={{ width: '100%', display: 'flex' }}>
                   <Button variant="text" sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
@@ -134,10 +137,10 @@ export default function Book() {
                   }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
                 }}>Add to My books</Button>}
                 {meta &&
-                  <Typography color='gray' textAlign='center'>
+                  <Typography color='gray' textAlign='center' mt={1}>
                     {meta.type} &middot; {(meta.size * 0.000001).toFixed(2)} MB
                   </Typography>}
-              </div>
+              </Box>
               <div>
                 <Head>
                   <title>{book.title}</title>

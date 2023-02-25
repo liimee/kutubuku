@@ -13,7 +13,7 @@ export default function BookGrid({ list }: { list: Book[] | null }) {
         }) =>
           <Grid item key={v.id}>
             <Button color='secondary' sx={{ p: 0 }} LinkComponent={Link} href={"/books/" + v.id} variant="text">
-              <BookThumb style={{ borderRadius: '4px', height: '14rem' }} id={v.id} alt={v.title} />
+              <BookThumb style={{ borderRadius: '4px', height: '14rem' }} id={v.id} title={v.title} alt={v.title} />
             </Button>
           </Grid>
         ) : <Grid item><CircularProgress /></Grid>

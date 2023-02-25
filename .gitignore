@@ -36,7 +36,6 @@ yarn-error.log*
 next-env.d.ts
 
 /prisma/data
-/prisma/migrations
 
 /books.txt
 /thumbnails

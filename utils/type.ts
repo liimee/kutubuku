@@ -2,7 +2,8 @@ import type { Dispatch, SetStateAction } from "react";
 
 export type TocContent = {
   index: number | string,
-  title: string
+  title: string,
+  children?: TocContent[]
 };
 
 export type ReaderProps = {

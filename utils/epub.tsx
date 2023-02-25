@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, IconButton, DialogContent, CircularProgress } from "@mui/material";
-import Epub, { Book, Rendition, Contents, Location } from "epubjs";
+import Epub, { Book, Rendition, Contents, Location, NavItem } from "epubjs";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ReaderProps, TocContent } from "./type";
 import CloseIcon from '@mui/icons-material/Close';
@@ -113,11 +113,22 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
   }, [setTocClick, rendition])
 
   useEffect(() => {
+    function mapSub(v: NavItem) {
+      const returned: TocContent = {
+        title: v.label,
+        index: v.href,
+        children: v.subitems?.map(mapSub)
+      }
+
+      return returned;
+    }
+
     if (book.current && iReady)
       setToc(book.current.navigation?.toc.map(v => {
         return {
           title: v.label,
-          index: v.href
+          index: v.href,
+          children: v.subitems?.map(mapSub)
         }
       }));
   }, [setToc, iReady])

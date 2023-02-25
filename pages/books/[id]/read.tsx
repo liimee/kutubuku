@@ -1,6 +1,6 @@
-import { AppBar, CircularProgress, Container, Dialog, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar } from '@mui/material';
+import { AppBar, CircularProgress, Collapse, Container, Dialog, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar } from '@mui/material';
 import { useRouter } from 'next/router';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ListIcon from '@mui/icons-material/List';
@@ -11,6 +11,8 @@ import type { TransitionProps } from '@mui/material/transitions';
 import EpubViewer from '@/utils/epub';
 import type { ReaderProps, TocContent } from '@/utils/type';
 import PdfViewer from '@/utils/pdf';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 
 export default function Read() {
   const router = useRouter()
@@ -151,16 +153,39 @@ export default function Read() {
     </Slide>
     <Drawer anchor='right' open={drawer} onClose={() => setDrawer(false)}>
       <List sx={{ width: 250 }}>
-        {toc.map((v, i) => <ListItem key={i}>
-          <ListItemButton onClick={() => {
-            if (onTocClick.current) onTocClick.current(v);
-
-            setDrawer(false);
-          }} selected={tocSelected === i}>
-            <ListItemText primary={v.title} secondary={typeof v.index === 'number' ? v.index + 1 : ''} />
-          </ListItemButton>
-        </ListItem>)}
+        {toc.map((v, i) => <Toc v={v} i={i} onTocClick={onTocClick} setDrawer={setDrawer} tocSelected={tocSelected} key={i} depth={1} />)}
       </List>
     </Drawer>
+  </>
+}
+
+function Toc({ v, i, onTocClick, setDrawer, tocSelected, depth }: { v: TocContent, i: number, onTocClick: MutableRefObject<((v: TocContent) => void) | null>, setDrawer: (v: any) => void, tocSelected: number, depth: number }) {
+  const [open, setOpen] = useState(false);
+
+  const hasChildren = (v.children && v.children.length > 0)
+
+  return <>
+    <ListItem>
+      <ListItemButton sx={{ pl: depth * 2 }} onClick={() => {
+        if (hasChildren) {
+          setOpen(!open);
+        } else {
+          if (onTocClick.current) onTocClick.current(v);
+
+          setDrawer(false);
+        }
+      }} selected={tocSelected === i}>
+        <ListItemText primary={v.title} secondary={typeof v.index === 'number' ? v.index + 1 : ''} />
+        {hasChildren && (open ? <ExpandLess /> : <ExpandMore />)}
+      </ListItemButton>
+    </ListItem>
+
+    {v.children && <Collapse in={open} timeout="auto" unmountOnExit>
+      <List disablePadding>
+        {
+          v.children.map((v, i) => <Toc key={i} v={v} i={i} onTocClick={onTocClick} setDrawer={setDrawer} tocSelected={tocSelected} depth={depth + 1} />)
+        }
+      </List>
+    </Collapse>}
   </>
 }

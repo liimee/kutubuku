@@ -108,11 +108,9 @@ export default function Book() {
           resp && !resp.ok ? <ErrorPage res={resp!} desc={<>Let&apos;s find some more interesting reads on the <MuiLink href='/' component={Link}>Explore page</MuiLink> instead.</>} /> :
             <Stack direction='row' spacing={2}>
               <Box sx={{
-                width: {
-                  xs: '30vw',
-                  sm: '11rem'
-                },
-                minWidth: '100px'
+                width: '100%',
+                minWidth: '100px',
+                flex: 1
               }}>
                 <Box sx={{
                   width: '100%',
@@ -141,7 +139,7 @@ export default function Book() {
                     {meta.type} &middot; {(meta.size * 0.000001).toFixed(2)} MB
                   </Typography>}
               </Box>
-              <div>
+              <div style={{ flex: 2 }}>
                 <Head>
                   <title>{book.title}</title>
                 </Head>

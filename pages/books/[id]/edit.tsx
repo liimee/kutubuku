@@ -1,4 +1,5 @@
 import { Box, Button, Container, LinearProgress, Snackbar, TextField } from "@mui/material";
+import type { Book } from "@prisma/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -8,14 +9,16 @@ export default function EditBook() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [desc, setDesc] = useState('');
+  const [published, setPub] = useState('');
   const [snackbar, setSnack] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (router.query.id) fetch('/api/book/' + router.query.id).then(v => v.json()).then(v => {
+    if (router.query.id) fetch('/api/book/' + router.query.id).then(v => v.json()).then((v: Book) => {
       setTitle(v.title);
-      setAuthor(v.author);
-      setDesc(v.desc);
+      setAuthor(v.author || '');
+      setDesc(v.desc || '');
+      setPub(v.published ? new Date(v.published).toISOString().split('T')[0] : '')
       setLoading(false);
     })
   }, [router.query.id])
@@ -42,7 +45,8 @@ export default function EditBook() {
             body: JSON.stringify({
               title,
               desc,
-              author
+              author,
+              published: published ? new Date(published).toISOString() : null
             })
           }).then(() => {
             window.workbox.messageSW({
@@ -57,6 +61,7 @@ export default function EditBook() {
         <TextField fullWidth disabled={loading} required value={title} onChange={e => setTitle(e.target.value)} label='Title' variant="outlined" />
         <TextField fullWidth disabled={loading} value={author} onChange={e => setAuthor(e.target.value)} label='Author' variant="outlined" />
         <TextField fullWidth disabled={loading} value={desc} onChange={e => setDesc(e.target.value)} label='Description' multiline minRows={2} maxRows={6} variant="outlined" />
+        <TextField type='date' InputLabelProps={{ shrink: true }} fullWidth disabled={loading} value={published} onChange={e => setPub(e.target.value)} label='Publish date' variant='outlined' />
 
         <Box sx={{ textAlign: 'end' }}>
           <Button disabled={loading} variant='contained' type='submit'>Save</Button>

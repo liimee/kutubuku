@@ -9,17 +9,11 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
   if (session) {
     if (req.method === 'POST') {
       try {
-        const { title, desc, author } = req.body;
-
         await client.book.update({
           where: {
             id: req.query.id as string
           },
-          data: {
-            title,
-            desc,
-            author
-          }
+          data: req.body
         })
 
         res.send('ok')

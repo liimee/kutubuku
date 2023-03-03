@@ -93,7 +93,7 @@ export default function scan() {
                       desc: description?.replace(/(<([^>]+)>)/gi, "") || res.items[0]?.volumeInfo.description,
                       author: creator,
                       path: v,
-                      published: date
+                      published: date && new Date(date).toISOString()
                     }
                   }).then(v => {
                     ep.getImageAsync(cover).then((img: [Buffer, string]) => {

@@ -10,8 +10,6 @@ export default async function Thumbnail(req: NextApiRequest, res: NextApiRespons
     res.setHeader('Content-Type', 'image/jpg');
     res.send(imageBuffer);
   } catch (e) {
-    console.log(e);
-
     res.status(404).send('shrug')
   }
 }

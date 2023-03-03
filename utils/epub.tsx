@@ -12,8 +12,9 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
   const [iReady, setiRed] = useState(false);
   const somethingSelected = useRef(false);
   const toc = useRef<TocContent[]>([]);
-
+  const dialogRend = useRef<Rendition | null>(null);
   const [dialog, setDialog] = useState<string | null>(null);
+
   const dialogRef = useCallback((node: HTMLDivElement) => {
     if (node !== null) {
       if (dialog) {
@@ -51,7 +52,36 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
     }
   }, [dialog, rendition]);
 
-  const dialogRend = useRef<Rendition | null>(null);
+  const actuallyClick = useCallback((e: MouseEvent) => {
+    // @ts-ignore
+    if (e.clientX - rendition?.manager.container.scrollLeft > window.top!.innerWidth / 2) {
+      rendition?.next()
+    } else {
+      rendition?.prev()
+    }
+  }, [rendition])
+
+  const click = useCallback((e: MouseEvent) => {
+    console.log(somethingSelected.current)
+    if (!drawer && !somethingSelected.current) {
+      const closestA = (e.target as Element).closest('a');
+
+      if (!closestA?.href)
+        if (e.clientY > window.top!.innerHeight * 0.64) {
+          setBar(b => !b);
+        } else {
+          setBar(b => {
+            if (b) {
+              return false
+            } else {
+              actuallyClick(e);
+            }
+
+            return b
+          });
+        }
+    }
+  }, [actuallyClick, drawer, setBar])
 
   function isFootnote(node: Element) {
     const decs = node.querySelectorAll('*');
@@ -59,8 +89,9 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
     return [...Array.from(decs), node].filter((el: Element) => {
       const style = window.getComputedStyle(el);
       const epType = node.closest('[epub\\:type]')?.getAttribute('epub:type');
+      const hasHref = node.closest('[href]');
 
-      return epType !== 'footnote' && (epType == 'noteref' ||
+      return hasHref && ((epType == 'noteref' || epType == 'footnote') ||
         (['inline', 'inline-block'].includes(style.display) &&
           ['sub', 'super', 'top', 'bottom'].includes(style.verticalAlign)))
     }).length > 0
@@ -84,6 +115,8 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
 
               if (book.current) setDialog((e.target as Element).tagName.toLowerCase() === 'a' ? (e.target as HTMLAnchorElement).href : (e.target as Element).closest('a')!.href)
             }
+          } else if (!v.href) {
+            v.onclick = click;
           }
         })
 
@@ -147,37 +180,6 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rendition, iReady])
-
-  const actuallyClick = useCallback((e: MouseEvent) => {
-    // @ts-ignore
-    if (e.clientX - rendition?.manager.container.scrollLeft > window.top!.innerWidth / 2) {
-      rendition?.next()
-    } else {
-      rendition?.prev()
-    }
-  }, [rendition])
-
-  const click = useCallback((e: MouseEvent) => {
-    console.log(somethingSelected.current)
-    if (!drawer && !somethingSelected.current) {
-      const closestA = (e.target as Element).closest('a');
-
-      if (!closestA)
-        if (e.clientY > window.top!.innerHeight * 0.64) {
-          setBar(b => !b);
-        } else {
-          setBar(b => {
-            if (b) {
-              return false
-            } else {
-              actuallyClick(e);
-            }
-
-            return b
-          });
-        }
-    }
-  }, [actuallyClick, drawer, setBar])
 
   useEffect(() => {
     rendition?.on('click', click);

@@ -115,8 +115,6 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
 
               if (book.current) setDialog((e.target as Element).tagName.toLowerCase() === 'a' ? (e.target as HTMLAnchorElement).href : (e.target as Element).closest('a')!.href)
             }
-          } else if (!v.href) {
-            v.onclick = click;
           }
         })
 

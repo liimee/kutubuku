@@ -1,6 +1,6 @@
 import BookThumb from "@/utils/bookthumb";
 import PlayArrow from "@mui/icons-material/PlayArrow";
-import { Link as MuiLink, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Snackbar, Stack, Tooltip, Typography } from "@mui/material";
+import { Link as MuiLink, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Snackbar, Stack, Tooltip, Typography, LinearProgress } from "@mui/material";
 import { Container } from "@mui/system";
 import Head from "next/head";
 import Link from "next/link";
@@ -104,7 +104,7 @@ export default function Book() {
   return (
     <>
       <Container maxWidth='sm' sx={{ p: 3 }}>
-        {(book === 0 && !resp) ? <CircularProgress /> :
+        {(book === 0 && !resp) ? <LinearProgress /> :
           resp && !resp.ok ? <ErrorPage res={resp!} desc={<>Let&apos;s find some more interesting reads on the <MuiLink href='/' component={Link}>Explore page</MuiLink> instead.</>} /> :
             <Stack direction='row' spacing={2}>
               <Box sx={{

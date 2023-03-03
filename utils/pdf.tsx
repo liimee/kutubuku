@@ -1,4 +1,4 @@
-import { useMediaQuery, CircularProgress, IconButton, Popover, Box, Typography } from "@mui/material";
+import { useMediaQuery, IconButton, Popover, Box, Typography, LinearProgress } from "@mui/material";
 import { useRef, useState, useEffect } from "react";
 import { PDFPageProxy, pdfjs, Page, Document } from "react-pdf";
 import { ReaderProps, TocContent } from "./type";
@@ -207,7 +207,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
       setToc(res);
       selfToc(res);
     });
-  }} loading={<CircularProgress />} file={file}>
+  }} loading={<LinearProgress />} file={file}>
     <Page pageIndex={pageNum} noData='' scale={scale} width={width} height={height} />
     {!isSmol && <Page pageIndex={pageNum + 1} noData='' scale={scale} width={width} height={height} />}
   </Document>

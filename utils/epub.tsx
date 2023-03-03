@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, IconButton, DialogContent, CircularProgress } from "@mui/material";
+import { Dialog, DialogTitle, IconButton, DialogContent, LinearProgress } from "@mui/material";
 import Epub, { Book, Rendition, Contents, Location, NavItem } from "epubjs";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ReaderProps, TocContent } from "./type";
@@ -257,6 +257,6 @@ export default function EpubViewer({ file, setBar, drawer, deb, id, progress, ba
         <div style={{ width: '100%' }} ref={dialogRef}></div>
       </DialogContent>
     </Dialog>
-    {!ready && <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
+    {!ready && <LinearProgress />}
   </>
 }

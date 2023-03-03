@@ -1,4 +1,4 @@
-import { AppBar, CircularProgress, Collapse, Container, Dialog, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar } from '@mui/material';
+import { AppBar, Collapse, Container, Dialog, Drawer, IconButton, LinearProgress, Link, List, ListItem, ListItemButton, ListItemText, Slide, Toolbar } from '@mui/material';
 import { useRouter } from 'next/router';
 import { forwardRef, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import debounce from 'lodash.debounce';
@@ -134,7 +134,7 @@ export default function Read() {
         filetype === 'application/epub+zip' ?
           <EpubViewer {...viewerProps} /> :
           <PdfViewer {...viewerProps} />
-        : <CircularProgress sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+        : <LinearProgress />
     }
 
     <Slide appear={true} direction='up' in={bar}>

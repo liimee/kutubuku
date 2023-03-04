@@ -51,7 +51,7 @@ export default function scan() {
                         title: item.title,
                         desc: item.description,
                         author: item.authors.join(', '),
-                        published: new Date(item.publishedDate).toISOString()
+                        published: item.publishedDate ? new Date(item.publishedDate).toISOString() : null
                       }
                     }).then((dbres) => {
                       console.log(dbres);

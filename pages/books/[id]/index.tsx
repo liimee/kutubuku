@@ -39,7 +39,9 @@ export default function Book() {
   const fetchBook = useCallback(() => fetch('/api/book/' + encodeURIComponent(id as string)).then((res) => {
     if (res.ok) return res.json();
     return new Promise((_, reject) => reject(res));
-  }).then(setBook, (res) => setResp(res)), [id]);
+  }, () => setResp(new Response('Server unreachable?', {
+    status: 444
+  }))).then(setBook, (res) => setResp(res)), [id]);
 
   useEffect(() => {
     if (id) {
@@ -96,7 +98,7 @@ export default function Book() {
         size: parseInt(v.headers.get('Content-Length')!),
         type: v.headers.get('Content-Type') === 'application/epub+zip' ? 'ePub' : 'PDF'
       })
-    })
+    }, () => { })
   }, [id])
 
   const handleClose = () => setOpen(false);
@@ -105,7 +107,7 @@ export default function Book() {
     <>
       <Container maxWidth='sm' sx={{ p: 3 }}>
         {(book === 0 && !resp) ? <LinearProgress /> :
-          resp && !resp.ok ? <ErrorPage res={resp!} desc={<>Let&apos;s find some more interesting reads on the <MuiLink href='/' component={Link}>Explore page</MuiLink> instead.</>} /> :
+          resp && !resp.ok ? <ErrorPage res={resp!} desc={<>Things didn&apos;t work out? Let&apos;s find some more interesting reads on the <MuiLink href='/' component={Link}>Explore page</MuiLink> instead.</>} /> :
             <Stack direction='row' spacing={2}>
               <Box sx={{
                 width: {

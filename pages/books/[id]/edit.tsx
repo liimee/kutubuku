@@ -52,9 +52,9 @@ export default function EditBook() {
             window.workbox.messageSW({
               do: 'deleteInfo',
               thing: router.query.id
-            }).finally(() => {
-              router.push('/books/' + router.query.id)
             })
+
+            router.replace('/books/' + router.query.id)
           }, () => setSnack(true)).finally(() => setLoading(false))
         }
       }}>
@@ -64,6 +64,7 @@ export default function EditBook() {
         <TextField type='date' InputLabelProps={{ shrink: true }} fullWidth disabled={loading} value={published} onChange={e => setPub(e.target.value)} label='Publish date' variant='outlined' />
 
         <Box sx={{ textAlign: 'end' }}>
+          <Button variant='text' onClick={router.back} sx={{ mr: 1 }}>Cancel</Button>
           <Button disabled={loading} variant='contained' type='submit'>Save</Button>
         </Box>
       </Box>

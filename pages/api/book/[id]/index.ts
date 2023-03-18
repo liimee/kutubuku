@@ -1,6 +1,8 @@
 import client from "@/utils/prisma";
+import { existsSync, unlinkSync } from "fs";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_getServerSession } from "next-auth/next";
+import path from "path";
 import { authOptions } from "../../auth/[...nextauth]";
 
 export default async function bookInfo(req: NextApiRequest, res: NextApiResponse) {
@@ -18,6 +20,32 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
 
         res.send('ok')
       } catch (_) {
+        res.status(500).send('no :(')
+      }
+    } else if (req.method === 'DELETE') {
+      try {
+        await client.progress.deleteMany({
+          where: {
+            bookId: req.query.id as string
+          }
+        })
+
+        await client.book.delete({
+          where: {
+            id: req.query.id as string
+          }
+        })
+
+        try {
+          const p = path.join('./', 'thumbnails', req.query.id as string + '.jpg');
+          if (existsSync(p)) {
+            unlinkSync(p);
+          }
+        } catch (_) { }
+
+        res.send('ok')
+      } catch (e) {
+        console.log(e)
         res.status(500).send('no :(')
       }
     } else {

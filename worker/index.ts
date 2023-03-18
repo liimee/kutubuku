@@ -170,6 +170,15 @@ registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
     })
   ]
 }), 'GET');
+registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
+  cacheName: 'books',
+  plugins: [
+    new ExpirationPlugin({
+      // 21 days/3 weeks I think
+      maxAgeSeconds: 21 * 24 * 60 * 60,
+    })
+  ]
+}), 'HEAD');
 registerRoute(/\/books\/\w+(?:\/read)?\/?$/, new NetworkFirst({
   cacheName: 'bookPages'
 }), 'GET')

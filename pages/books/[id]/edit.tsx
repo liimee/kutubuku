@@ -80,8 +80,8 @@ export default function EditBook() {
 
     <Dialog
       open={confirmDel}
-      onClose={(e: Event) => {
-        if (beingDelled) e.preventDefault()
+      onClose={() => {
+        if (!beingDelled) setDel(false)
       }}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"

@@ -124,7 +124,7 @@ export default function Book() {
                 </Box>
                 <Box sx={{ width: '100%', display: 'flex' }}>
                   <Button variant="text" sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
-                  <Tooltip title={isDownloading ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download'}>
+                  <Tooltip title={isDownloading ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download for offline read'}>
                     <IconButton onClick={downloadOrDelete} color='primary' disabled={isDownloading}>{isDownloading ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
                   </Tooltip>
                 </Box>

@@ -97,6 +97,29 @@ export default function Read() {
     return () => debs.cancel()
   }, [debs])
 
+  useEffect(() => {
+    // honestly only chrome supports it but whatever
+
+    let wakelock: any;
+
+    if ("wakeLock" in navigator) {
+      try {
+        // @ts-ignore
+        navigator.wakeLock.request("screen").then(v => {
+          wakelock = v;
+          console.log('wakelock set')
+        })
+      } catch (e) { }
+    }
+
+    return () => {
+      if (wakelock) wakelock.release().then(() => {
+        wakelock = null;
+        console.log('wakelock released')
+      });
+    }
+  }, [])
+
   const viewerProps: ReaderProps = {
     drawer,
     setBar,

@@ -136,7 +136,17 @@ export default function Book() {
 
                   fetch('/api/book/' + router.query.id + '/progress', {
                     method: 'POST'
-                  }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
+                  }).then(v => {
+                    if (v.ok) {
+                      fetchBook();
+
+                      window.workbox.messageSW({
+                        do: 'download',
+                        things: ['/api/my'],
+                        name: 'apis'
+                      })
+                    }
+                  }).finally(() => setProgDisabled(false))
                 }}>Add to My books</Button>}
                 {meta &&
                   <Typography color='gray' textAlign='center' mt={1}>
@@ -193,7 +203,16 @@ export default function Book() {
 
         fetch('/api/book/' + router.query.id + '/progress', {
           method: 'DELETE'
-        }).then(v => v.ok ? fetchBook() : null).finally(() => setProgDisabled(false))
+        }).then(v => {
+          if (v.ok) {
+            fetchBook();
+            window.workbox.messageSW({
+              do: 'download',
+              things: ['/api/my'],
+              name: 'apis'
+            })
+          }
+        }).finally(() => setProgDisabled(false))
       }} />
     </>
   )

@@ -94,10 +94,12 @@ export default function Book() {
     if (id) fetch('/api/book/' + id + '/file', {
       method: 'HEAD'
     }).then(v => {
-      setMeta({
-        size: parseInt(v.headers.get('Content-Length')!),
-        type: v.headers.get('Content-Type') === 'application/epub+zip' ? 'ePub' : 'PDF'
-      })
+      if (v.ok) {
+        setMeta({
+          size: parseInt(v.headers.get('Content-Length')!),
+          type: v.headers.get('Content-Type') === 'application/epub+zip' ? 'ePub' : 'PDF'
+        })
+      }
     }, () => { })
   }, [id])
 

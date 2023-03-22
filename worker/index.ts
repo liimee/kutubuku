@@ -170,15 +170,23 @@ registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
     })
   ]
 }), 'GET');
-registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
-  cacheName: 'books',
-  plugins: [
-    new ExpirationPlugin({
-      // 21 days/3 weeks I think
-      maxAgeSeconds: 21 * 24 * 60 * 60,
-    })
-  ]
-}), 'HEAD');
+registerRoute(/\/api\/book\/\w+\/file\/?$/, async req => {
+  try {
+    const net = await new NetworkOnly().handle(req);
+    return net;
+  } catch (_) {
+    const cache = await caches.match(req.url);
+    if (cache) {
+      return new Response(null, {
+        headers: cache.headers
+      })
+    } else {
+      return new Response('Unavailable offline', {
+        status: 404
+      })
+    }
+  }
+}, 'HEAD');
 registerRoute(/\/books\/\w+(?:\/read)?\/?$/, new NetworkFirst({
   cacheName: 'bookPages'
 }), 'GET')

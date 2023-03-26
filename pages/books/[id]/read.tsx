@@ -86,14 +86,6 @@ export default function Read() {
   }, [debs])
 
   useEffect(() => {
-    if (id) window.workbox.messageSW({
-      do: 'downloadIfNotExist',
-      thing: '/api/book/' + id + '/file',
-      name: 'books'
-    })
-  }, [id])
-
-  useEffect(() => {
     return () => debs.cancel()
   }, [debs])
 

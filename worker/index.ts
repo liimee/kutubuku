@@ -171,16 +171,16 @@ registerRoute(/\/api\/book\/\w+\/file\/?$/, new CacheFirst({
   ]
 }), 'GET');
 registerRoute(/\/api\/book\/\w+\/file\/?$/, async req => {
-  try {
-    const net = await new NetworkOnly().handle(req);
-    return net;
-  } catch (_) {
-    const cache = await caches.match(req.url);
-    if (cache) {
-      return new Response(null, {
-        headers: cache.headers
-      })
-    } else {
+  const cache = await caches.match(req.url);
+  if (cache) {
+    return new Response(null, {
+      headers: cache.headers
+    })
+  } else {
+    try {
+      const net = await new NetworkOnly().handle(req);
+      return net;
+    } catch (e) {
       return new Response('Unavailable offline', {
         status: 404
       })

@@ -38,7 +38,7 @@ export default function Index() {
           e.preventDefault();
 
           signIn('credentials', {
-            username,
+            username: username.toLowerCase(),
             password: pass,
             callbackUrl: router.query.callbackUrl?.toString() || '/'
           });

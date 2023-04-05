@@ -1,5 +1,5 @@
 import BookThumb from "@/utils/bookthumb";
-import { Box, Button, Checkbox, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, LinearProgress, Snackbar, TextField, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, LinearProgress, Snackbar, TextField, Tooltip, Typography } from "@mui/material";
 import type { Book } from "@prisma/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -99,9 +99,11 @@ export default function EditBook() {
               }} hidden disabled={loading} accept="image/jpeg" multiple type="file" />
             </Button>
             {customCover &&
-              <IconButton onClick={() => setCover(null)} color='error' aria-label="reset">
-                <Replay />
-              </IconButton>
+              <Tooltip title='Reset to last stored image'>
+                <IconButton disabled={loading} onClick={() => setCover(null)} color='error' aria-label="reset">
+                  <Replay />
+                </IconButton>
+              </Tooltip>
             }
           </Box>
         </Box>

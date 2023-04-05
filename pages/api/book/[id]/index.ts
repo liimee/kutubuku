@@ -16,8 +16,9 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
       try {
         if (req.body.img) {
           img.outputFile(req.body.img, path.join('./', 'thumbnails', req.query.id + '.jpg'));
-          delete req.body.img;
         }
+
+        if (req.body.img !== undefined) delete req.body.img;
 
         await client.book.update({
           where: {

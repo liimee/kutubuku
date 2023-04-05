@@ -1,5 +1,5 @@
 import BookThumb from "@/utils/bookthumb";
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, LinearProgress, Snackbar, TextField, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, LinearProgress, Snackbar, TextField, Typography } from "@mui/material";
 import type { Book } from "@prisma/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -20,6 +20,7 @@ export default function EditBook() {
   const router = useRouter();
 
   const [idForGp, setIdForGp] = useState('');
+  const [repCov, setRepCov] = useState(false);
 
   const [confirmDel, setDel] = useState(false);
   const [beingDelled, setBeing] = useState(false);
@@ -78,7 +79,7 @@ export default function EditBook() {
         <Box m='auto' gap={.5} display='flex' flexDirection='column' maxWidth='150px'>
           <BookThumb src={customCover} style={{ borderRadius: '4px' }} id={router.query.id} title={title} />
           <Box display='flex' gap={.5}>
-            <Button sx={{ flexGrow: 1 }} startIcon={<FileUpload />} component="label">
+            <Button disabled={loading} sx={{ flexGrow: 1 }} startIcon={<FileUpload />} component="label">
               Upload
 
               <input onChange={e => {
@@ -95,7 +96,7 @@ export default function EditBook() {
 
                   reader.readAsDataURL(file);
                 }
-              }} hidden accept="image/jpeg" multiple type="file" />
+              }} hidden disabled={loading} accept="image/jpeg" multiple type="file" />
             </Button>
             {customCover &&
               <IconButton onClick={() => setCover(null)} color='error' aria-label="reset">
@@ -129,7 +130,8 @@ export default function EditBook() {
           fetch('/api/playbooks', {
             method: 'POST',
             body: JSON.stringify({
-              id: idForGp
+              id: idForGp,
+              withCover: repCov
             }),
             headers: {
               'Content-Type': 'application/json'
@@ -146,6 +148,7 @@ export default function EditBook() {
             setDesc(v.desc);
             setIdForGp('');
             setPub(v.published);
+            if (repCov) setCover(v.cover);
             setSnack('Metadata successfully fetched.');
           }, () => setSnack('Failed to fetch metadata from Play Books.')).finally(() => setLoading(false))
         }}
@@ -171,7 +174,12 @@ export default function EditBook() {
           }
         }} disabled={loading} InputLabelProps={{ shrink: true }} value={idForGp} required placeholder="https://play.google.com/store/books/details/book?id=THISTHING" />
 
-        <Box textAlign='end'><Button disabled={loading} variant='outlined' type='submit'>Fetch</Button></Box>
+        <Box display='flex' flexDirection='row' alignItems='center' gap={1}>
+          <Box flexGrow={1}>
+            <FormControlLabel control={<Checkbox disabled={loading} onChange={e => setRepCov(e.target.checked)} checked={repCov} />} label="Replace cover" />
+          </Box>
+          <Button disabled={loading} variant='outlined' type='submit'>Fetch</Button>
+        </Box>
       </Box>
     </Container>
 

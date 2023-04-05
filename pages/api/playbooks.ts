@@ -12,14 +12,25 @@ export default async function PlayBooks(req: NextApiRequest, res: NextApiRespons
     const volume = await books.getVolume(req.body.id);
     const data = volume.volumeInfo;
 
-    res.json({
+    const response: any = {
       title: data.title,
       author: data.authors.join(', '),
       desc: convert(data.description, {
         wordwrap: false
       }),
-      published: data.publishedDate
-    })
+      published: data.publishedDate,
+      cover: null
+    };
+
+    if (req.body.withCover) {
+      const cover = await fetch(data.imageLinks.thumbnail);
+      const buff = await cover.arrayBuffer();
+      const actualBuffer = Buffer.from(buff);
+
+      response.cover = `data:image/jpeg;base64,${actualBuffer.toString('base64')}`;
+    }
+
+    res.json(response)
   } catch (e) {
     console.log(e);
 
@@ -47,4 +58,10 @@ function runMiddleware(
       return resolve(result)
     })
   })
+}
+
+export const config = {
+  api: {
+    responseLimit: '10mb',
+  },
 }

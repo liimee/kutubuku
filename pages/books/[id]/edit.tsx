@@ -1,4 +1,4 @@
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress, Snackbar, TextField } from "@mui/material";
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress, Snackbar, TextField, Typography } from "@mui/material";
 import type { Book } from "@prisma/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -12,6 +12,8 @@ export default function EditBook() {
   const [published, setPub] = useState('');
   const [snackbar, setSnack] = useState('');
   const router = useRouter();
+
+  const [idForGp, setIdForGp] = useState('');
 
   const [confirmDel, setDel] = useState(false);
   const [beingDelled, setBeing] = useState(false);
@@ -31,11 +33,14 @@ export default function EditBook() {
       <title>{`Edit ${title || 'book'}`}</title>
     </Head>
 
-    <Container maxWidth='sm' sx={{ p: 3 }}>
+    <Container maxWidth='sm' sx={{
+      p: 3,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 2
+    }}>
       {loading && <LinearProgress />}
-      <Box component='form' sx={{
-        '& .MuiTextField-root': { my: 1 },
-      }} onSubmit={e => {
+      <Box component='form' display='flex' flexDirection='column' gap={2} border='solid 1px hsl(0, 0%, 0%, 0.2)' borderRadius='6px' padding={1.5} onSubmit={e => {
         e.preventDefault()
         if (!loading) {
           setLoading(true)
@@ -61,6 +66,8 @@ export default function EditBook() {
           }, () => setSnack('Failed to save edits.')).finally(() => setLoading(false))
         }
       }}>
+        <Typography fontWeight='bold' component='h1'>Edit metadata</Typography>
+
         <TextField fullWidth disabled={loading} required value={title} onChange={e => setTitle(e.target.value)} label='Title' variant="outlined" />
         <TextField fullWidth disabled={loading} value={author} onChange={e => setAuthor(e.target.value)} label='Author' variant="outlined" />
         <TextField fullWidth disabled={loading} value={desc} onChange={e => setDesc(e.target.value)} label='Description' multiline minRows={2} maxRows={6} variant="outlined" />
@@ -75,6 +82,59 @@ export default function EditBook() {
             <Button disabled={loading} variant='contained' type='submit'>Save</Button>
           </Box>
         </Box>
+      </Box>
+
+      <Box component='form' border='solid 1px hsl(0, 0%, 0%, 0.2)' borderRadius='6px' padding={1.5} display='flex' gap={2} flexDirection='column'
+        onSubmit={e => {
+          e.preventDefault();
+
+          setLoading(true);
+          fetch('/api/playbooks', {
+            method: 'POST',
+            body: JSON.stringify({
+              id: idForGp
+            }),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(v => {
+            if (v.ok) {
+              return v.json()
+            } else {
+              throw new Error()
+            }
+          }).then(v => {
+            setTitle(v.title);
+            setAuthor(v.author);
+            setDesc(v.desc);
+            setIdForGp('');
+            setPub(v.published);
+            setSnack('Metadata successfully fetched.');
+          }, () => setSnack('Failed to fetch metadata from Play Books.')).finally(() => setLoading(false))
+        }}
+      >
+        <Box>
+          <Typography fontWeight='bold' component='h1'>...or import it from Google Play Books!</Typography>
+          <Typography>I know you are too lazy to copy-paste things yourself. Me too, so just paste the <b>ID</b> (or the <b>URL of the book page</b>, <s>with hope that things work and the URL gets transformed to an ID</s>) of the book here.</Typography>
+        </Box>
+
+        <TextField fullWidth label="ID or URL..." onChange={e => {
+          const value = e.target.value;
+
+          try {
+            const url = new URL(value);
+            const id = url.searchParams.get('id');
+            if ((url.host === 'play.google.com' && /^\/store\/books\/details\/\w+\/?$/.test(url.pathname)) && id) {
+              setIdForGp(id);
+            } else {
+              setIdForGp(value);
+            }
+          } catch (_) {
+            setIdForGp(value);
+          }
+        }} disabled={loading} InputLabelProps={{ shrink: true }} value={idForGp} required placeholder="https://play.google.com/store/books/details/book?id=THISTHING" />
+
+        <Box textAlign='end'><Button disabled={loading} variant='outlined' type='submit'>Fetch</Button></Box>
       </Box>
     </Container>
 

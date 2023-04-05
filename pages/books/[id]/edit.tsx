@@ -1,15 +1,21 @@
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress, Snackbar, TextField, Typography } from "@mui/material";
+import BookThumb from "@/utils/bookthumb";
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, LinearProgress, Snackbar, TextField, Typography } from "@mui/material";
 import type { Book } from "@prisma/client";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import FileUpload from "@mui/icons-material/FileUpload";
+import Replay from "@mui/icons-material/RotateLeft";
 
 export default function EditBook() {
   const [loading, setLoading] = useState(true);
+
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [desc, setDesc] = useState('');
   const [published, setPub] = useState('');
+  const [customCover, setCover] = useState<string | null>(null);
+
   const [snackbar, setSnack] = useState('');
   const router = useRouter();
 
@@ -54,7 +60,8 @@ export default function EditBook() {
               title,
               desc,
               author,
-              published: published ? new Date(published).toISOString() : null
+              published: published ? new Date(published).toISOString() : null,
+              img: customCover
             })
           }).then(() => {
             window.workbox.messageSW({
@@ -67,6 +74,36 @@ export default function EditBook() {
         }
       }}>
         <Typography fontWeight='bold' component='h1'>Edit metadata</Typography>
+
+        <Box m='auto' gap={.5} display='flex' flexDirection='column' maxWidth='150px'>
+          <BookThumb src={customCover} style={{ borderRadius: '4px' }} id={router.query.id} title={title} />
+          <Box display='flex' gap={.5}>
+            <Button sx={{ flexGrow: 1 }} startIcon={<FileUpload />} component="label">
+              Upload
+
+              <input onChange={e => {
+                const file = e.target.files?.item(0);
+                if (file) {
+                  if (file.type !== 'image/jpeg') {
+                    setSnack('File must be JPG.');
+                    return;
+                  }
+
+                  const reader = new FileReader();
+
+                  reader.onload = () => setCover(reader.result as string);
+
+                  reader.readAsDataURL(file);
+                }
+              }} hidden accept="image/jpeg" multiple type="file" />
+            </Button>
+            {customCover &&
+              <IconButton onClick={() => setCover(null)} color='error' aria-label="reset">
+                <Replay />
+              </IconButton>
+            }
+          </Box>
+        </Box>
 
         <TextField fullWidth disabled={loading} required value={title} onChange={e => setTitle(e.target.value)} label='Title' variant="outlined" />
         <TextField fullWidth disabled={loading} value={author} onChange={e => setAuthor(e.target.value)} label='Author' variant="outlined" />

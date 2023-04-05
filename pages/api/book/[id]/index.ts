@@ -5,12 +5,20 @@ import { unstable_getServerSession } from "next-auth/next";
 import path from "path";
 import { authOptions } from "../../auth/[...nextauth]";
 
+// @ts-ignore
+import img from 'image-data-uri';
+
 export default async function bookInfo(req: NextApiRequest, res: NextApiResponse) {
   const session = await unstable_getServerSession(req, res, authOptions)
 
   if (session) {
     if (req.method === 'POST') {
       try {
+        if (req.body.img) {
+          img.outputFile(req.body.img, path.join('./', 'thumbnails', req.query.id + '.jpg'));
+          delete req.body.img;
+        }
+
         await client.book.update({
           where: {
             id: req.query.id as string
@@ -72,4 +80,12 @@ export default async function bookInfo(req: NextApiRequest, res: NextApiResponse
   } else {
     res.status(401).send('Unauthorized :)');
   }
+}
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    }
+  },
 }

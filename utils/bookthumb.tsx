@@ -2,13 +2,17 @@
 /* eslint-disable jsx-a11y/alt-text */
 
 import { Box, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function BookThumb(props: any) {
   const [error, setError] = useState(false);
 
+  useEffect(() => {
+    setError(false);
+  }, [props.src])
+
   return !error ?
-    <img {...props} onError={() => setError(true)} src={'/api/book/' + props.id + '/thumb'} />
+    <img {...props} onError={() => setError(true)} src={props.src || '/api/book/' + props.id + '/thumb'} />
     : <Box sx={{
       background: 'linear-gradient(to top, #935d1d, #D08529)',
       color: '#F3DEC4',

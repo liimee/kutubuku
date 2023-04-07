@@ -48,6 +48,14 @@ self.addEventListener('message', event => {
       caches.open(data.name).then(cache => {
         cache.match(data.thing).then(v => {
           if (!v) {
+            const errorHandler = () => {
+              updateProgress(data.thing, null);
+
+              event.ports[0].postMessage({
+                error: true
+              })
+            }
+
             fetch(data.thing)
               .then(res => {
                 const body = res.body;
@@ -80,12 +88,10 @@ self.addEventListener('message', event => {
 
                     updateProgress(data.thing, bytes / size);
 
-                    return reader.read().then(processResult);
-                  });
+                    return reader.read().then(processResult, errorHandler);
+                  }, errorHandler);
                 }
-              }, () => event.ports[0].postMessage({
-                error: true
-              }))
+              }, errorHandler)
           } else {
             console.log(data.thing + ' is already in cache')
             returnKeys(event, cache)

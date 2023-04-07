@@ -1,5 +1,5 @@
 import { useMediaQuery, IconButton, Popover, Box, Typography, LinearProgress, Slider } from "@mui/material";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { PDFPageProxy, pdfjs, Page, Document } from "react-pdf";
 import { ReaderProps, TocContent } from "./type";
 import 'react-pdf/dist/esm/Page/TextLayer.css'
@@ -25,6 +25,8 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
 
   const [pageSliderOpen, setPsOpen] = useState(false);
   const psAnchor = useRef<HTMLButtonElement>(null);
+
+  const tooltipOpen = useMemo(() => pageSliderOpen || scalePop, [pageSliderOpen, scalePop]);
 
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
@@ -69,13 +71,18 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
         <Popover anchorOrigin={{
           vertical: 'top',
           horizontal: 'left',
-        }} open={pageSliderOpen} anchorEl={psAnchor.current} onClose={() => setPsOpen(false)}>
-          <Box py={2} px={4}>
+        }} open={pageSliderOpen} anchorEl={psAnchor.current} onClose={() => setPsOpen(false)} PaperProps={{
+          sx: {
+            width: '90vw',
+            maxWidth: '400px'
+          }
+        }}>
+          <Box py={2} px={3}>
             <Typography variant='h6'>Go to Page</Typography>
             <Slider defaultValue={pageNum + 1} min={1} max={pages} onChangeCommitted={(_, v) => {
               deb(id, ((v as number - 1) / pages));
               setPage(v as number - 1)
-            }} sx={{ width: '200px' }} aria-label="Default" valueLabelDisplay="auto" marks={[
+            }} aria-label="Default" valueLabelDisplay="auto" valueLabelFormat={s => 'Page ' + s} marks={[
               {
                 value: 1,
                 label: 1
@@ -119,7 +126,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
     }
 
     function click(e: MouseEvent) {
-      if (!drawer && (!somethingSelected.current && !scalePop)) {
+      if (!drawer && (!somethingSelected.current && !tooltipOpen)) {
         if (e.clientY > window.innerHeight * 0.64) {
           setBar(b => !b);
         } else {
@@ -159,7 +166,7 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
       window.removeEventListener('click', click);
       window.removeEventListener('keydown', keyboard);
     })
-  }, [bar, deb, id, isSmol, pages, drawer, setBar, scalePop])
+  }, [bar, deb, drawer, id, isSmol, pages, setBar, tooltipOpen])
 
   useEffect(() => {
     setTocSelect(toc.reduce((prevIndex, curr, currIndex) =>

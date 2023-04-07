@@ -36,14 +36,20 @@ export default function Read() {
 
   useEffect(() => {
     if (id) {
-      fetch(`/api/book/${id}/file`).then(res => {
-        if (res.ok) {
-          setFtype(res.headers.get('Content-Type') || 'application/pdf');
-          res.arrayBuffer().then(setFile)
-        } else {
-          setRes(res);
-        }
-      })
+      window.workbox.messageSW({
+        do: 'downloadIfNotExist',
+        thing: `/api/book/${id}/file`,
+        name: 'books'
+      }).then(() =>
+        fetch(`/api/book/${id}/file`).then(res => {
+          if (res.ok) {
+            setFtype(res.headers.get('Content-Type') || 'application/pdf');
+            res.arrayBuffer().then(setFile)
+          } else {
+            setRes(res);
+          }
+        })
+      )
     }
   }, [id])
 

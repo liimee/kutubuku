@@ -27,9 +27,22 @@ const beingDownloaded: {
   [key: string]: number
 } = {};
 
-function updateProgress(key: string, value: number | null) {
+const waitTillDone: [string, Function, Function][] = [];
+
+function updateProgress(key: string, value: number | null, type: string = 'working') {
   if (value === null) delete beingDownloaded[key];
   else beingDownloaded[key] = value;
+
+  if (value === null) {
+    waitTillDone.filter(v => v[0] === key).forEach((v, i) => {
+      console.log(`callback run for ${key} (${type})`)
+
+      if (type === 'working') v[1]();
+      else v[2]();
+
+      waitTillDone.splice(i, 1);
+    });
+  }
 
   progress.postMessage(beingDownloaded);
 }
@@ -49,11 +62,21 @@ self.addEventListener('message', event => {
         cache.match(data.thing).then(v => {
           if (!v) {
             const errorHandler = () => {
-              updateProgress(data.thing, null);
+              updateProgress(data.thing, null, 'error');
 
               event.ports[0].postMessage({
                 error: true
               })
+            }
+
+            if (beingDownloaded[data.thing]) {
+              console.log(`${data.thing} is already in queue; waiting...`)
+
+              waitTillDone.push([data.thing, () => returnKeys(event, cache), () => event.ports[0].postMessage({
+                error: true
+              })]);
+
+              return;
             }
 
             fetch(data.thing)
@@ -67,17 +90,23 @@ self.addEventListener('message', event => {
 
                   updateProgress(data.thing, bytes / size);
 
-                  const arrays: Uint8Array[] = [];
+                  let arrays: Uint8Array[] = [];
 
                   reader.read().then(function processResult(result): any {
                     if (result.done) {
-                      const arr = new Uint8Array(arrays.flat() as unknown as Uint8Array).buffer;
+                      let chunksAll = new Uint8Array(bytes);
+                      let position = 0;
+                      for (let chunk of arrays) {
+                        chunksAll.set(chunk, position);
+                        position += chunk.length;
+                      }
 
-                      updateProgress(data.thing, null);
-
-                      cache.put(data.thing, new Response(arr, {
+                      cache.put(data.thing, new Response(chunksAll, {
                         headers: res.headers
-                      })).then(() => returnKeys(event, cache))
+                      })).then(() => {
+                        returnKeys(event, cache);
+                        updateProgress(data.thing, null);
+                      })
 
                       return;
                     }

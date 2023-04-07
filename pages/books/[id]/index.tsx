@@ -5,7 +5,7 @@ import { Container } from "@mui/system";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router"
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import DownloadDoneIcon from '@mui/icons-material/DownloadDone';
 import DownloadingIcon from '@mui/icons-material/Downloading';
@@ -45,6 +45,9 @@ export default function Book() {
 
   const [downloadProgress, setDownloadProg] = useState<{ [key: string]: number }>({});
 
+  const selfProgress = useMemo(() => downloadProgress[`/api/book/${router.query.id}/file`] || null, [downloadProgress, router.query.id]);
+  const beingDownloaded = useMemo(() => isDownloading || selfProgress != null, [isDownloading, selfProgress]);
+
   useEffect(() => {
     const channel = new BroadcastChannel('progress_channel');
 
@@ -54,15 +57,13 @@ export default function Book() {
   }, []);
 
   useEffect(() => {
-    const self = downloadProgress[`/api/book/${router.query.id}/file`];
-
-    if (self) {
-      if (self === 1) {
+    if (selfProgress) {
+      if (selfProgress === 1) {
         setDown(true);
         setMsg('Book downloaded!');
       }
     }
-  }, [downloadProgress, router.query.id])
+  }, [selfProgress])
 
   useEffect(() => {
     if (id) {
@@ -146,14 +147,14 @@ export default function Book() {
                   <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} title={book.title} alt="Book cover" />
                 </Box>
                 <Box sx={{ width: '100%', display: 'flex' }}>
-                  <Button variant="text" disabled={isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] != null} sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
+                  <Button variant="text" disabled={beingDownloaded} sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
                   <Box position='relative'>
-                    <Tooltip title={isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download for offline read'}>
-                      <IconButton onClick={downloadOrDelete} color='primary' disabled={isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] != null}>{isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
+                    <Tooltip title={beingDownloaded ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download for offline read'}>
+                      <IconButton onClick={downloadOrDelete} color='primary' disabled={beingDownloaded}>{beingDownloaded ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
                     </Tooltip>
 
-                    {downloadProgress[`/api/book/${router.query.id}/file`] &&
-                      <CircularProgress variant={downloadProgress[`/api/book/${router.query.id}/file`] * 100 < 10 ? 'indeterminate' : "determinate"} value={downloadProgress[`/api/book/${router.query.id}/file`] * 100} size='2em' sx={{
+                    {selfProgress &&
+                      <CircularProgress variant={selfProgress * 100 < 10 ? 'indeterminate' : "determinate"} value={selfProgress * 100} size='2em' sx={{
                         position: 'absolute',
                         top: 4,
                         left: 4,

@@ -1,4 +1,4 @@
-import { useMediaQuery, IconButton, Popover, Box, Typography, LinearProgress } from "@mui/material";
+import { useMediaQuery, IconButton, Popover, Box, Typography, LinearProgress, Slider } from "@mui/material";
 import { useRef, useState, useEffect } from "react";
 import { PDFPageProxy, pdfjs, Page, Document } from "react-pdf";
 import { ReaderProps, TocContent } from "./type";
@@ -7,6 +7,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
 import FormatSize from "@mui/icons-material/FormatSize";
 import ZoomIn from "@mui/icons-material/ZoomIn";
 import ZoomOut from '@mui/icons-material/ZoomOut';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 
 export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id, setToc, setTocClick, setButtons, setTocSelect }: ReaderProps) {
   var pdf = useRef<HTMLDivElement>();
@@ -21,6 +22,9 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
   const [scalePop, setPop] = useState(false);
   const anchor = useRef<HTMLButtonElement>(null);
   const [toc, selfToc] = useState<TocContent[]>([]);
+
+  const [pageSliderOpen, setPsOpen] = useState(false);
+  const psAnchor = useRef<HTMLButtonElement>(null);
 
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
@@ -60,9 +64,35 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
         <IconButton ref={anchor} key='scale' color='inherit' onClick={() => {
           setPop(true)
         }}><FormatSize /></IconButton>
+      </>,
+      <>
+        <Popover anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }} open={pageSliderOpen} anchorEl={psAnchor.current} onClose={() => setPsOpen(false)}>
+          <Box py={2} px={4}>
+            <Typography variant='h6'>Go to Page</Typography>
+            <Slider defaultValue={pageNum + 1} min={1} max={pages} onChangeCommitted={(_, v) => {
+              deb(id, ((v as number - 1) / pages));
+              setPage(v as number - 1)
+            }} sx={{ width: '200px' }} aria-label="Default" valueLabelDisplay="auto" marks={[
+              {
+                value: 1,
+                label: 1
+              },
+              {
+                value: pages,
+                label: pages
+              }
+            ]} />
+          </Box>
+        </Popover>
+        <IconButton ref={psAnchor} key='slider' color='inherit' onClick={() => {
+          setPsOpen(true)
+        }}><AutoStoriesIcon /></IconButton>
       </>
     ])
-  }, [id, scale, scalePop, setButtons])
+  }, [deb, id, pageNum, pageSliderOpen, pages, scale, scalePop, setButtons])
 
   useEffect(() => {
     if (id) {
@@ -78,8 +108,9 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
       setPage(p => {
         let g = p;
 
-        if (e.clientX >= window.innerWidth / 2) g = p + add
-        else if (p > 0) g = p - add;
+        if (e.clientX >= window.innerWidth / 2) {
+          if (g + 1 < pages - 1 || (isSmol && g < pages - 1)) g = p + add;
+        } else if (p > 0) g = p - add;
 
         deb(id, (g / pages));
 
@@ -209,6 +240,6 @@ export default function PdfViewer({ file, progress, setBar, deb, drawer, bar, id
     });
   }} loading={<LinearProgress />} file={file}>
     <Page pageIndex={pageNum} noData='' scale={scale} width={width} height={height} />
-    {!isSmol && <Page pageIndex={pageNum + 1} noData='' scale={scale} width={width} height={height} />}
+    {(!isSmol && pageNum != pages - 1) && <Page pageIndex={pageNum + 1} noData='' scale={scale} width={width} height={height} />}
   </Document>
 }

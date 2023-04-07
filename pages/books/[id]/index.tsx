@@ -1,6 +1,6 @@
 import BookThumb from "@/utils/bookthumb";
 import PlayArrow from "@mui/icons-material/PlayArrow";
-import { Link as MuiLink, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Snackbar, Stack, Tooltip, Typography, LinearProgress } from "@mui/material";
+import { Link as MuiLink, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Snackbar, Stack, Tooltip, Typography, LinearProgress, CircularProgress } from "@mui/material";
 import { Container } from "@mui/system";
 import Head from "next/head";
 import Link from "next/link";
@@ -42,6 +42,27 @@ export default function Book() {
   }, () => setResp(new Response('Server unreachable?', {
     status: 444
   }))).then(setBook, (res) => setResp(res)), [id]);
+
+  const [downloadProgress, setDownloadProg] = useState<{ [key: string]: number }>({});
+
+  useEffect(() => {
+    const channel = new BroadcastChannel('progress_channel');
+
+    channel.onmessage = e => setDownloadProg(e.data);
+
+    return () => channel.close();
+  }, []);
+
+  useEffect(() => {
+    const self = downloadProgress[`/api/book/${router.query.id}/file`];
+
+    if (self) {
+      if (self === 1) {
+        setDown(true);
+        setMsg('Book downloaded!');
+      }
+    }
+  }, [downloadProgress, router.query.id])
 
   useEffect(() => {
     if (id) {
@@ -125,10 +146,21 @@ export default function Book() {
                   <BookThumb style={{ borderRadius: '4px', width: '100%' }} id={book.id} title={book.title} alt="Book cover" />
                 </Box>
                 <Box sx={{ width: '100%', display: 'flex' }}>
-                  <Button variant="text" sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
-                  <Tooltip title={isDownloading ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download for offline read'}>
-                    <IconButton onClick={downloadOrDelete} color='primary' disabled={isDownloading}>{isDownloading ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
-                  </Tooltip>
+                  <Button variant="text" disabled={isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] != null} sx={{ flexGrow: 1 }} href={`/books/${book.id}/read`} LinkComponent={Link} startIcon={<PlayArrow />}>Read</Button>
+                  <Box position='relative'>
+                    <Tooltip title={isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download for offline read'}>
+                      <IconButton onClick={downloadOrDelete} color='primary' disabled={isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] != null}>{isDownloading || downloadProgress[`/api/book/${router.query.id}/file`] ? <DownloadingIcon /> : downloaded ? <DownloadDoneIcon /> : <DownloadForOfflineIcon />}</IconButton>
+                    </Tooltip>
+
+                    {downloadProgress[`/api/book/${router.query.id}/file`] &&
+                      <CircularProgress variant={downloadProgress[`/api/book/${router.query.id}/file`] * 100 < 10 ? 'indeterminate' : "determinate"} value={downloadProgress[`/api/book/${router.query.id}/file`] * 100} size='2em' sx={{
+                        position: 'absolute',
+                        top: 4,
+                        left: 4,
+                        zIndex: 1,
+                      }} />
+                    }
+                  </Box>
                 </Box>
                 {book.BookProgress.length > 0 ? <Button fullWidth variant='text' disabled={progDisabled} color='error' startIcon={<Remove />} onClick={() => {
                   setProgDisabled(true);

@@ -21,6 +21,19 @@ self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
+const progress = new BroadcastChannel("progress_channel");
+
+const beingDownloaded: {
+  [key: string]: number
+} = {};
+
+function updateProgress(key: string, value: number | null) {
+  if (value === null) delete beingDownloaded[key];
+  else beingDownloaded[key] = value;
+
+  progress.postMessage(beingDownloaded);
+}
+
 self.addEventListener('message', event => {
   if (event) {
     const { data } = event;
@@ -35,13 +48,44 @@ self.addEventListener('message', event => {
       caches.open(data.name).then(cache => {
         cache.match(data.thing).then(v => {
           if (!v) {
-            cache.add(data.thing).then(() => {
-              console.log('Downloaded ' + data.thing);
+            fetch(data.thing)
+              .then(res => {
+                const body = res.body;
+                if (body) {
+                  const reader = body.getReader();
 
-              returnKeys(event, cache)
-            }, () => event.ports[0].postMessage({
-              error: true
-            }))
+                  let bytes = 0;
+                  const size = parseInt(res.headers.get('Content-Length')!);
+
+                  updateProgress(data.thing, bytes / size);
+
+                  const arrays: Uint8Array[] = [];
+
+                  reader.read().then(function processResult(result): any {
+                    if (result.done) {
+                      const arr = new Uint8Array(arrays.flat() as unknown as Uint8Array).buffer;
+
+                      updateProgress(data.thing, null);
+
+                      cache.put(data.thing, new Response(arr, {
+                        headers: res.headers
+                      })).then(() => returnKeys(event, cache))
+
+                      return;
+                    }
+
+                    bytes += result.value.length;
+
+                    arrays.push(result.value);
+
+                    updateProgress(data.thing, bytes / size);
+
+                    return reader.read().then(processResult);
+                  });
+                }
+              }, () => event.ports[0].postMessage({
+                error: true
+              }))
           } else {
             console.log(data.thing + ' is already in cache')
             returnKeys(event, cache)

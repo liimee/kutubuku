@@ -34,13 +34,18 @@ export default function Read() {
 
   const [resp, setRes] = useState<Response | null>(null);
 
+  const [dlProgress, setDlProgress] = useState(0);
+
   useEffect(() => {
     if (id) {
+      const sub = new BroadcastChannel('progress_channel');
+      sub.onmessage = (e => setDlProgress((e.data[`/api/book/${id}/file`] || 0) * 100));
+
       window.workbox.messageSW({
         do: 'downloadIfNotExist',
         thing: `/api/book/${id}/file`,
         name: 'books'
-      }).then(() =>
+      }).then(() => {
         fetch(`/api/book/${id}/file`).then(res => {
           if (res.ok) {
             setFtype(res.headers.get('Content-Type') || 'application/pdf');
@@ -48,8 +53,11 @@ export default function Read() {
           } else {
             setRes(res);
           }
-        })
-      )
+        });
+
+        sub.close();
+        setDlProgress(0);
+      })
     }
   }, [id])
 
@@ -155,7 +163,7 @@ export default function Read() {
         filetype === 'application/epub+zip' ?
           <EpubViewer {...viewerProps} /> :
           <PdfViewer {...viewerProps} />
-        : <LinearProgress />
+        : <LinearProgress variant={dlProgress > 10 ? 'determinate' : 'indeterminate'} value={dlProgress} />
     }
 
     <Slide appear={true} direction='up' in={bar}>

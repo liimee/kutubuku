@@ -25,7 +25,7 @@ export default function scan() {
   }
 
   books.filter(v => v.trim().length > 0 && existsSync(v)).filter(v => lstatSync(v).isDirectory()).forEach(v => {
-    glob(path.join(v, '*.pdf'), {}, (_, files) => {
+    glob(path.posix.join(v, '*.pdf'), {}, (_, files) => {
       console.log(files)
       files.forEach(v => {
         client.book.findUnique({

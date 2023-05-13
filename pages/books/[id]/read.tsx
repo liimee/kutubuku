@@ -32,6 +32,8 @@ export default function Read() {
   const [file, setFile] = useState<ArrayBuffer | null>(null);
   const [filetype, setFtype] = useState('application/pdf');
 
+  const [showTutor, setTutor] = useState(false);
+
   const [resp, setRes] = useState<Response | null>(null);
 
   const [dlProgress, setDlProgress] = useState(0);
@@ -50,6 +52,8 @@ export default function Read() {
           if (res.ok) {
             setFtype(res.headers.get('Content-Type') || 'application/pdf');
             res.arrayBuffer().then(setFile)
+
+            setTutor(localStorage.getItem('tutor') !== 'true')
           } else {
             setRes(res);
           }
@@ -64,8 +68,8 @@ export default function Read() {
   useEffect(() => {
     if (id) fetch(`/api/book/${id}/progress`).then(v => v.json(), () => new Promise((_, reject) => reject())).then(v => {
       console.log(v)
-      setTitle(v.book?.title || 'Book');
-      setProgress(v.progress)
+      setTitle(v?.book?.title || 'Book');
+      setProgress(v?.progress || 0)
       window.workbox.messageSW({
         do: 'download',
         things: [`/api/book/${id}/progress`],
@@ -114,7 +118,7 @@ export default function Read() {
         navigator.wakeLock.request("screen").then(v => {
           wakelock = v;
           console.log('wakelock set')
-        })
+        }).catch(() => { })
       } catch (e) { }
     }
 
@@ -125,6 +129,21 @@ export default function Read() {
       });
     }
   }, [])
+
+  useEffect(() => {
+    function click(e: Event) {
+      e.stopImmediatePropagation();
+
+      setTutor(false);
+      localStorage.setItem('tutor', 'true');
+    }
+
+    if (showTutor) {
+      window.addEventListener('click', click);
+    }
+
+    return () => window.removeEventListener('click', click)
+  }, [showTutor])
 
   const viewerProps: ReaderProps = {
     drawer,
@@ -159,11 +178,34 @@ export default function Read() {
         </>} />
       </Container>
     </Dialog> :
-      file ?
-        filetype === 'application/epub+zip' ?
-          <EpubViewer {...viewerProps} /> :
-          <PdfViewer {...viewerProps} />
-        : <LinearProgress variant={dlProgress > 10 ? 'determinate' : 'indeterminate'} value={dlProgress} />
+      <>
+        {showTutor && <div style={{
+          position: 'fixed',
+          width: '100%',
+          height: '100%',
+          zIndex: 3000,
+          backgroundColor: '#fff',
+          textAlign: 'center'
+        }}>
+          <table style={{ width: '100%', height: '100%' }}>
+            <tr>
+              <td style={{
+                width: '50%',
+                border: 'medium dashed black'
+              }}>Click here to view the previous page</td>
+              <td style={{ width: '50%', border: 'medium dashed black' }}>Click here to view the next page</td>
+            </tr>
+            <tr>
+              <td colSpan={2} style={{ border: 'medium dashed black', height: '36%' }}>Click here to open the menu</td>
+            </tr>
+          </table>
+        </div>}
+        {file ?
+          filetype === 'application/epub+zip' ?
+            <EpubViewer {...viewerProps} /> :
+            <PdfViewer {...viewerProps} />
+          : <LinearProgress variant={dlProgress > 10 ? 'determinate' : 'indeterminate'} value={dlProgress} />}
+      </>
     }
 
     <Slide appear={true} direction='up' in={bar}>
